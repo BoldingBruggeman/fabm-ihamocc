@@ -1,8 +1,9 @@
-module ihammac_model_library
+module ihamocc_model_library
 
    use fabm_types, only: type_base_model_factory, type_base_model
 
 !KB   use ihammac_sediment
+   use ihamocc_oxygen
 
    implicit none
 
@@ -13,7 +14,7 @@ module ihammac_model_library
       procedure :: create
    end type
 
-   type (type_factory), save, target, public :: ihammac_model_factory
+   type (type_factory), save, target, public :: ihamocc_model_factory
 
 contains
 
@@ -24,6 +25,7 @@ contains
 
       select case (name)
 !KB         case ('sediment');            allocate(type_ihammac_sediment::model)
+         case ('oxygen');            allocate(type_ihamocc_oxygen::model)
          ! Add new models here
          case default
             call self%type_base_model_factory%create(name, model)
