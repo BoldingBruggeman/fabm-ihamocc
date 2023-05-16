@@ -4,6 +4,9 @@ module ihamocc_model_library
 
 !KB   use ihammac_sediment
    use ihamocc_oxygen
+   use ihamocc_carbon
+   use ihamocc_bromo
+   use ihamocc_cfc
 
    implicit none
 
@@ -26,6 +29,10 @@ contains
       select case (name)
 !KB         case ('sediment');            allocate(type_ihammac_sediment::model)
          case ('oxygen');            allocate(type_ihamocc_oxygen::model)
+         case ('carbon');            allocate(type_ihamocc_carbon::model)
+         case ('bromo');             allocate(type_ihamocc_bromo::model)
+         case ('cfc');               allocate(type_ihamocc_cfc::model)
+             
          ! Add new models here
          case default
             call self%type_base_model_factory%create(name, model)
