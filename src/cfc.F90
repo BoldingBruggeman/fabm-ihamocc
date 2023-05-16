@@ -10,10 +10,10 @@ module ihamocc_cfc
    private
 
    type, extends(type_base_model), public :: type_ihamocc_cfc
-      !type (type_dependency_id) :: id_psao, id_ptho, id_hi, id_Kw
-      !type (type_surface_dependency_id) :: id_psicomo, id_pfu10, id_atmbromo, id_ppao
-      !type (type_state_variable_id) :: id_oxygen
-      !type (type_surface_diagnostic_variable_id) ::  id_bromoflx
+      type (type_dependency_id) :: id_psao, id_ptho
+      type (type_surface_dependency_id) :: id_psicomo, id_pfu10, id_ppao, id_atm_cfc11, id_atm_cfc12, id_atm_sf6
+      type (type_state_variable_id) :: id_cfc11, id_cfc12, id_sf6
+      type (type_surface_diagnostic_variable_id) ::  id_atmf11, id_atmf12, id_atmsf6
 
    contains
       ! Model procedures
@@ -29,20 +29,24 @@ contains
       integer,                  intent(in)            :: configunit
       
       ! Register state variables
-      !call self%register_state_variable(self%id_bromo, 'bromoform', 'kmol/m^3', 'Dissolved bromoform')
+      call self%register_state_variable(self%id_cfc11, 'cfc11', 'kmol/m^3', 'Dissolved cfc 11 gas')
+      call self%register_state_variable(self%id_cfc12, 'cfc11', 'kmol/m^3', 'Dissolved cfc 11 gas')
+      call self%register_state_variable(self%id_sf6,   'sf6',   'kmol/m^3', 'Dissolved sf 6 gas')
 
       ! Register environmental dependencies
       call self%register_dependency(self%id_psao, standard_variables%practical_salinity)
       call self%register_dependency(self%id_ptho, standard_variables%temperature)
       call self%register_dependency(self%id_psicomo, standard_variables%ice_area_fraction)
       call self%register_dependency(self%id_pfu10, standard_variables%wind_speed)
-      !call self%register_dependency(self%id_atmbromo, standard_variables%surface_air_bromoform_concentration) 
-      !call self%register_dependency(self%id_ppao, standard_variables%surface_air_pressure) ! surface air pressure in pascal
-      !call self%register_dependency(self%id_hi, 'hi', 'mol/kg', 'Hydrogen ion concentration')
-      !call self%register_dependency(self%id_Kw, 'kW', 'mol/kg', 'Water dissociation product')
+      call self%register_dependency(self%id_atm_cfc11, , 'atm_cfc11', 'ppt', 'atmospheric cfc11 concentration')
+      call self%register_dependency(self%id_atm_cfc12, , 'atm_cfc12', 'ppt', 'atmospheric cfc12 concentration')
+      call self%register_dependency(self%id_atm_sf6, , 'atm_sf6', 'ppt', 'atmospheric sf6 concentration') 
+      call self%register_dependency(self%id_ppao, standard_variables%surface_air_pressure) ! surface air pressure in pascal
       
       ! Register diagnostic variables
-      !call self%register_diagnostic_variable(self%id_bromoflx, 'bromoflx', 'kmol/m2/s', 'Bromoform surface flux')
+      call self%register_diagnostic_variable(self%id_atmf11, 'atmf11', 'kmol/m2/s', 'cfc 11 surface flux')
+      call self%register_diagnostic_variable(self%id_atmf12, 'atmf11', 'kmol/m2/s', 'cfc 11 surface flux')
+      call self%register_diagnostic_variable(self%id_atmsf6, 'atmsf6', 'kmol/m2/s', 'sf 6 surface flux')
 
    end subroutine
    
@@ -50,15 +54,20 @@ contains
       class (type_ihamocc_cfc), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_SURFACE_
 
-      real(rk) :: t, t2, t3, tk, ptho, ppao, atmbrf, bromo, psicomo, pfu10, flx_bromo, kw_bromo, a_bromo, sch_bromo
+      real(rk) :: t, t2, t3, tk, tk100, s, ptho, psao, psicomo, pfu10, sch_11, sch_12, sch_sf, atm_cfc11, atm_cfc12, atm_sf6, a_11, a_12, a_sf, kw_11, kw_12, kw_sf, cfc11, cfc12, sf6, flx11, flx12, flxsf
             
       _SURFACE_LOOP_BEGIN_
-         !_GET_(self%id_bromo, bromo)
+         _GET_SURFACE_(self%id_atm_cfc11, atm_cfc11)
+         _GET_SURFACE_(self%id_atm_cfc12, atm_cfc12)
+         _GET_SURFACE_(self%id_atm_sf6, atm_sf6)
+         _GET_(self%id_cfc11, cfc11)
+         _GET_(self%id_cfc12, cfc12)
+         _GET_(self%id_sf6, sf6)
+
          _GET_(self%id_id_ptho, ptho)
          _GET_(self%id_psao, psao)
          _GET_SURFACE_(self%id_psicomo, psicomo)
-         !_GET_SURFACE_(self%id_atmbromo, atbrf)
-         !_GET_SURFACE_(self%id_ppao, ppao)
+         _GET_SURFACE_(self%id_ppao, ppao)
          _GET_SURFACE_(self%id_pfu10, pfu10)
          
          
@@ -93,63 +102,18 @@ contains
          kw_12 = (1._rk-psicomo) * Xconvxa * pfu10**2*(660._rk/sch_12)**0.5_rk
          kw_sf = (1._rk-psicomo) * Xconvxa * pfu10**2*(660._rk/sch_sf)**0.5_rk
        
-         ! Surface fluxes for CFC: eqn. (1a) in ocmip2 howto doc(hyc)
-         !     flux of CFC: downward direction (mol/m**2/s)
-         !      flx11=kw_11*(a_11*cfc11_atm(i,j)*ppair/p0-trc(i,j,1,1))
-         !      flx12=kw_12*(a_12*cfc12_atm(i,j)*ppair/p0-trc(i,j,1,2))
-         !      unit should be in [kmol cfc m-2]
-         !      unit of [cfc11_atm(i,j)*ppair/p0] should be in [pptv]
-         !      unit of [flx11-12] is in [kmol / m2]
 
-      IF (pglat(i,j).GE.10) THEN
-       atm_cfc11=atm_cfc11_nh
-       atm_cfc12=atm_cfc12_nh
-       atm_sf6=atm_sf6_nh
-      ELSE IF (pglat(i,j).LE.-10) THEN
-       atm_cfc11=atm_cfc11_sh
-       atm_cfc12=atm_cfc12_sh
-       atm_sf6=atm_sf6_sh
-      ELSE
-       fact=(pglat(i,j)-(-10))/20.
-       atm_cfc11=fact*atm_cfc11_nh+(1-fact)*atm_cfc11_sh
-       atm_cfc12=fact*atm_cfc12_nh+(1-fact)*atm_cfc12_sh
-       atm_sf6=fact*atm_sf6_nh+(1-fact)*atm_sf6_sh
-      ENDIF
-
-! Use conversion of 9.86923e-6 [std atm / Pascal]
-! Surface flux of cfc11
-      flx11=kw_11*dtbgc*                                               &
-     & (a_11*atm_cfc11*ppao(i,j)*9.86923*1e-6-ocetra(i,j,1,icfc11))
-      ocetra(i,j,1,icfc11)=ocetra(i,j,1,icfc11)+flx11/pddpo(i,j,1)
-! Surface flux of cfc12
-      flx12=kw_12*dtbgc*                                               &
-     & (a_12*atm_cfc12*ppao(i,j)*9.86923*1e-6-ocetra(i,j,1,icfc12))
-      ocetra(i,j,1,icfc12)=ocetra(i,j,1,icfc12)+flx12/pddpo(i,j,1)
-! Surface flux of sf6
-      flxsf=kw_sf*dtbgc*                                               &
-     & (a_sf*atm_sf6*ppao(i,j)*9.86923*1e-6-ocetra(i,j,1,isf6))
-      ocetra(i,j,1,isf6)=ocetra(i,j,1,isf6)+flxsf/pddpo(i,j,1)
-      
-      atmflx(i,j,iatmf11)=flx11
-       atmflx(i,j,iatmf12)=flx12
-       atmflx(i,j,iatmsf6)=flxsf
+         ! Use conversion of 9.86923e-6 [std atm / Pascal]
+         flx11 = kw_11*(a_11*atm_cfc11*ppao*9.86923_rk*1.e-6_rk-cfc11) ! Surface flux of cfc11
+         flx12 = kw_12*(a_12*atm_cfc12*ppao*9.86923_rk*1.e-6_rk-cfc12) ! Surface flux of cfc12
+         flxsf = kw_sf*(a_sf*atm_sf6*ppao*9.86923_rk*1.e-6_rk-sf6) ! Surface flux of sf6
          
-         !_ADD_SURFACE_FLUX_(self%id_bromo, -flx_bromo) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
-         !_SET_SURFACE_DIAGNOSTIC_(self%id_bromoflx, -flx_bromo)
+         _ADD_SURFACE_FLUX_(self%id_cfc11, flx11) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
+         _ADD_SURFACE_FLUX_(self%id_cfc11, flx12) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
+         _ADD_SURFACE_FLUX_(self%id_cfc11, flxsf) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
+         _SET_SURFACE_DIAGNOSTIC_(self%id_atmf11, flx11)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_atmf12, flx12)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_atmsf6, flxsf)
       _SURFACE_LOOP_END_
    end subroutine do_surface
-   
-   subroutine do(self, _ARGUMENTS_DO_)
-      class (type_ihamocc_cfc), intent(in) :: self
-      _DECLARE_ARGUMENTS_DO_
-
-      real(rk) :: t, tk, hi, ah1, Kb1, rocbromo, Kb1, lsub, ah1, bromo, Kw
-      
-      _LOOP_BEGIN_
-         !_GET_(self%id_bromo, bromo)
-         !_GET_(self%id_hi, hi)
-         !_GET_(self%id_Kw,Kw)
-
-         !_ADD_SOURCE_(self%id_bromo,rocbromo)
-      _LOOP_END_
-   end subroutine do
+end module ihamocc_cfc

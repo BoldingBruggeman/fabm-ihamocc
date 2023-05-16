@@ -80,3 +80,4 @@ contains
          _ADD_SURFACE_FLUX_(self%id_oxygen, -oxflux) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
       _SURFACE_LOOP_END_
    end subroutine do_surface   
+end module ihamocc_oxygen

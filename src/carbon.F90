@@ -503,3 +503,4 @@ contains
       tc_sat    = dic_h2co3 + dic_hco3 + dic_co3 
       
    end subroutine carchm_solve_DICsat
+end module ihamocc_carbon

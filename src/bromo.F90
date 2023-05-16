@@ -111,3 +111,4 @@ contains
          _ADD_SOURCE_(self%id_bromo,rocbromo)
       _LOOP_END_
    end subroutine do
+end module ihamocc_bromo
