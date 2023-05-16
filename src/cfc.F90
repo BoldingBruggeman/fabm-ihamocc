@@ -18,8 +18,7 @@ module ihamocc_cfc
    contains
       ! Model procedures
       procedure :: initialize
-      !procedure :: do_surface
-      !procedure :: do
+      procedure :: do_surface
    end type type_ihamocc_cfc
 
 contains
