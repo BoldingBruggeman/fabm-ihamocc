@@ -61,8 +61,8 @@ contains
       call self%register_dependency(self%id_psicomo, standard_variables%ice_area_fraction)
       call self%register_dependency(self%id_atco2, standard_variables%surface_air_carbon_dioxide_concentration) ! atmospheric oxygen mixing ratio (i.e. partial presure = mixing ratio*SLP/P_0 [atm])  NOTE: variable does not exist/non-standard!
       call self%register_dependency(self%id_ppao, standard_variables%surface_air_pressure) ! surface air pressure in pascal
-      call self%register_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
-      call self%register_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved hosphate')
+      call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
+      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved hosphate')
       
       ! Register diagnostic variables
       

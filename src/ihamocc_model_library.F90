@@ -7,6 +7,14 @@ module ihamocc_model_library
    use ihamocc_carbon
    use ihamocc_bromo
    use ihamocc_cfc
+   use ihamocc_dms
+   use ihamocc_alkalinization
+   use ihamocc_iron
+   use ihamocc_ndep
+   use ihamocc_preftrc
+   use ihamocc_phytoplankton
+   use ihamocc_zooplankton
+   use ihamocc_detritus
 
    implicit none
 
@@ -32,7 +40,14 @@ contains
          case ('carbon');            allocate(type_ihamocc_carbon::model)
          case ('bromo');             allocate(type_ihamocc_bromo::model)
          case ('cfc');               allocate(type_ihamocc_cfc::model)
-             
+         case ('dms');               allocate(type_ihamocc_dms::model)
+         case ('alkalinization');    allocate(type_ihamocc_alkalinization::model)    
+         case ('iron');              allocate(type_ihamocc_iron::model)               
+         case ('ndep');              allocate(type_ihamocc_ndep::model) 
+         case ('preftrc');           allocate(type_ihamocc_preftrc::model)
+         case ('phytoplankton');     allocate(type_ihamocc_phytoplankton::model)
+         case ('zooplankton');       allocate(type_ihamocc_zooplankton::model)
+         case ('detritus');          allocate(type_ihamocc_detritus::model)    
          ! Add new models here
          case default
             call self%type_base_model_factory%create(name, model)

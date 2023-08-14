@@ -13,11 +13,14 @@ module ihamocc_oxygen
       type (type_dependency_id) :: id_psao, id_ptho
       type (type_surface_dependency_id) :: id_psicomo, id_pfu10, id_ato2, id_ppao
       type (type_state_variable_id) :: id_oxygen
-      type (type_surface_diagnostic_variable_id) ::  id_bromoflx
+      type (type_surface_diagnostic_variable_id) ::  id_oxflux
+      type (type_diagnostic_variable_id) :: id_satoxy
+      
    contains
       ! Model procedures
       procedure :: initialize
       procedure :: do_surface
+      procedure :: do
    end type type_ihamocc_oxygen
 
 contains
@@ -39,6 +42,7 @@ contains
       
       ! Register diagnostic variables
       call self%register_diagnostic_variable(self%id_oxflux, 'oxflux', 'kmol/m2/s', 'oxygen surface flux')
+      call self%register_diagnostic_variable(self%id_satoxy, 'satoxy', 'kmol/m^3', 'oxygen solubility')
 
    end subroutine
    
@@ -79,5 +83,28 @@ contains
          _SET_SURFACE_DIAGNOSTIC_(self%id_oxflux, oxflux)
          _ADD_SURFACE_FLUX_(self%id_oxygen, -oxflux) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
       _SURFACE_LOOP_END_
-   end subroutine do_surface   
+   end subroutine do_surface  
+   
+   subroutine do(self, _ARGUMENTS_DO_)
+      class (type_ihamocc_oxygen), intent(in) :: self
+      _DECLARE_ARGUMENTS_DO_
+
+      real(rk) :: ptho, psao, t, tk, tk100, s, oxy, satoxy
+      
+      _LOOP_BEGIN_
+         _GET_(self%id_id_ptho, ptho)
+         _GET_(self%id_psao, psao)
+         
+         t = min(40._rk,max(-3._rk,ptho))
+         tk = t + tzero
+         tk100 = tk/100.0_rk
+         s = min(40._rk,max( 25._rk,psao))
+
+         ! solubility of O2 (Weiss, R.F. 1970, Deep-Sea Res., 17, 721-735) for moist air at 1 atm; multiplication with oxyco converts to kmol/m^3/atm
+         oxy = ox0+ox1/tk100+ox2*alog(tk100)+ox3*tk100+s*(ox4+ox5*tk100+ox6*tk100**2)
+		 satoxy = exp(oxy)*oxyco                  
+         
+         _SET_DIAGNOSTIC_(self%id_satoxy,satoxy)
+      _LOOP_END_
+   end subroutine do
 end module ihamocc_oxygen

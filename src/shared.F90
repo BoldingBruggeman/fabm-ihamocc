@@ -1,14 +1,13 @@
 module ihamocc_shared
    use fabm_types, only: rk
-   real(rk), parameter :: Xconvxa = 6.97e-07_rk !oxygen.f90 !carbon.f90 !cfc.f90        ! Wanninkhof's a=0.251 converted from [cm hr-1]/[m s-1]^2 to [ms-1]/[m s-1]^2       NIC: from carchm.f90
+   real(rk), parameter :: Xconvxa = 6.97e-07_rk !oxygen.f90 !carbon.f90 !cfc.f90 !dms.f90        ! Wanninkhof's a=0.251 converted from [cm hr-1]/[m s-1]^2 to [ms-1]/[m s-1]^2       NIC: from carchm.f90
    real(rk), parameter :: atm2pa = 101325.0_rk !oxygen.f90 !carbon.f90                      ! conversion factor from atmospheres to pascal
    real(rk), parameter :: tzero = 273.15_rk !oxygen.f90 !carbon.f90 !bromo.f90 !cfc.f90                     ! absolute min temperature (*C) 
    
    ! mo_control_bgc parameters
    !---------------------------------------------------------------------------------
    real(rk), parameter :: dtbgc = 86400.0_rk              !  time step length [sec].
-   real(rk), parameter :: dtb = 86400.0_rk              !  time step length [sec].
-
+   real(rk), parameter :: dtb = 1.0_rk              !  time step length [days].
    
    ! mo_chemcon parameters
    !---------------------------------------------------------------------------------
@@ -70,5 +69,15 @@ module ihamocc_shared
    DATA b2 /0.0_rk, 0.0_rk, 0.0_rk, 0.0_rk, 0.0_rk, 0.0_rk, 0.0_rk, 0.0_rk, 0.0_rk, 0.0_rk, 0.0_rk/
    real(rk), parameter :: rgas = 83.131_rk !carbon.f90                           !Gas constant, value as used by Millero (1995)
 
-   
+   ! beleg_parm parameters
+   !---------------------------------------------------------------
+   ! extended redfield ratio declaration
+   ! Note: stoichiometric ratios are based on Takahashi etal. (1985)
+   ! P:N:C:-O2 + 1:16:122:172
+    real(rk), parameter :: ro2ut=172._rk !detritus.f90
+    real(rk), parameter :: rcar=122._rk !phytoplankton.f90 !detritus.f90
+    real(rk), parameter :: rnit=16._rk !detritus.f90
+    real(rk), parameter :: rnoi=1._rk/rnit !phytoplankton.f90
+
+    real(rk), parameter :: riron= 5._rk*rcar*1.e-6_rk !phytoplankton.f90 !detritus.f90        ! fe to P ratio in organic matter
 end module
