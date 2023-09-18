@@ -10,9 +10,9 @@ module ihamocc_bromo
    private
 
    type, extends(type_base_model), public :: type_ihamocc_bromo
-      type (type_dependency_id) :: id_psao, id_ptho, id_hi, id_Kw
+      type (type_dependency_id) :: id_psao, id_ptho, id_hi, id_Kw, id_phosy, id_bkopal, id_depth
       type (type_surface_dependency_id) :: id_psicomo, id_pfu10, id_atmbromo, id_ppao
-      type (type_state_variable_id) :: id_oxygen
+      type (type_state_variable_id) :: id_oxygen, id_silica
       type (type_surface_diagnostic_variable_id) ::  id_bromoflx
 
    contains
@@ -28,11 +28,16 @@ contains
       class (type_ihamocc_bromo), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
+      ! Register parameters
+      call self%get_parameter(self%rbro, 'rbro', '-','rbro', default=2.4e-6_rk*rnit)
+      call self%get_parameter(self%fbro1,'fbro1', '-','fbro1', default=1._rk*rnit)
+      call self%get_parameter(self%fbro2,'fbro2', '-','fbro2', default=1._rk*rnit)
+      
       ! Register state variables
       call self%register_state_variable(self%id_bromo, 'bromoform', 'kmol/m^3', 'Dissolved bromoform')
 
       ! Register environmental dependencies
-      !call self%register_dependency(self%id_psao, standard_variables%practical_salinity)
+      call self%register_dependency(self%id_depth, standard_variables%depth)
       call self%register_dependency(self%id_ptho, standard_variables%temperature)
       call self%register_dependency(self%id_psicomo, standard_variables%ice_area_fraction)
       call self%register_dependency(self%id_pfu10, standard_variables%wind_speed)
@@ -40,6 +45,15 @@ contains
       call self%register_dependency(self%id_ppao, standard_variables%surface_air_pressure) ! surface air pressure in pascal
       call self%register_dependency(self%id_hi, 'hi', 'mol/kg', 'Hydrogen ion concentration')
       call self%register_dependency(self%id_Kw, 'kW', 'mol/kg', 'Water dissociation product')
+      call self%register_dependency(self%id_phosy, 'phosy', 'kmol/m3/d', 'photosynthetic production')
+      call self%register_dependency(self%id_bkopal, 'bkopal', 'kmol Si/m3','half sat. constant for opal')
+      call self%register_dependency(self%id_strahl, standard_variables%downwelling_shortwave_flux)
+      call self%register_dependency(self%id_swa_clim, 'swa_clim', '??', 'swa climatology field')
+      call self%register_dependency(self%id_phosy, 'phosy', 'kmol/m3/d', 'photosynthetic rate')
+
+      
+      ! Register state dependencies
+      call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
       
       ! Register diagnostic variables
       call self%register_diagnostic_variable(self%id_bromoflx, 'bromoflx', 'kmol/m2/s', 'Bromoform surface flux')
@@ -87,12 +101,18 @@ contains
       class (type_ihamocc_bromo), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
 
-      real(rk) :: t, tk, hi, ah1, Kb1, rocbromo, Kb1, lsub, ah1, bromo, Kw
+      real(rk) :: t, tk, hi, ah1, Kb1, rocbromo, Kb1, lsub, ah1, bromo, Kw, phosy, bkopal, strahl, swa_clim, bro_beta
       
       _LOOP_BEGIN_
          _GET_(self%id_bromo, bromo)
          _GET_(self%id_hi, hi)
          _GET_(self%id_Kw,Kw)
+         _GET_(self%id_phosy,phosy)
+         _GET_(self%id_bkopal,bkopal)
+         _GET_(self%id_strahl,strahl)
+         _GET_(self%id_swa_clim,swa_clim)
+         _GET_(self%id_depth, depth)             
+
 
          ! Carbon chemistry: Calculate equilibrium constants and solve for [H+] and
          ! carbonate alkalinity (ac)
@@ -102,13 +122,23 @@ contains
          ah1  = hi
          
          
-         Kb1=2.05e12_rk*exp(-1.073e5_rk/(8.314_rk*tk)) ! Degradation to hydrolysis (Eq. 2-4 of Stemmler et al., 2015) A1=1.23e17 mol min-1 => 2.05e12 kmol sec-1 
+         Kb1=2.05e12_rk*exp(-1.073e5_rk/(8.314_rk*tk))*dtbgc ! Degradation to hydrolysis (Eq. 2-4 of Stemmler et al., 2015) A1=1.23e17 mol min-1 => 2.05e12 kmol sec-1 
          
-         lsub=7.33e-10_rk*exp(1.250713e4_rk*(1._rk/298._rk-1._rk/tk)) ! Degradation to halogen substitution (Eq. 5-6 of Stemmler et al., 2015)
-         
+         lsub=7.33e-10_rk*exp(1.250713e4_rk*(1._rk/298._rk-1._rk/tk))*dtbgc ! Degradation to halogen substitution (Eq. 5-6 of Stemmler et al., 2015)
+
          rocbromo = -(Kb1*Kw/ah1 + lsub)*bromo !NIC: This expression is bugged (unit mismatch in Kb1*Kw/ah1) and should be rewritten, pending a decision from Jerry
-                  
-         _ADD_SOURCE_(self%id_bromo,rocbromo)
+
+         if (depth<=100_rk) then
+             _GET_(self%id_silica, silica)
+             _GET_(self%id_phosy, phosy)
+             avsil = max(0.0_rk,silica)
+             bro_beta = self%rbro*(self%fbro1*avsil/(avsil+bkopal)+self%fbro2*bkopal/(avsil+bkopal))
+             
+             !!!! ADD uv photolysis !!!!
+             
+             rocbromo = rocbromo + bro_beta*phosy - bro_uv
+         endif
+         _ADD_SOURCE_(self%id_bromo,rocbromo/dtbgc)
       _LOOP_END_
    end subroutine do
 end module ihamocc_bromo

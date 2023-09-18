@@ -73,14 +73,6 @@ contains
          _GET_(self%id_phy, avphy)
          _GET_(self%id_phytomi, phytomi)
          _GET_(self%id_zoo, avgra)
-         !_GET_(self%id_silica, avsil)
-         !_GET_(self%id_sco212, avdic)
-         !_GET_(self%id_phosph, phosph)
-         !_GET_(self%id_ano3, ano3)
-         !_GET_(self%id_iron, iron)
-      
-         !temp = min(40._rk,max(-3._rk,ptho))
-         !temfa = 0.6_rk * 1.066_rk**temp
          
          grazing = MAX(0.0_rk,avgra*self%grazra*(avphy-phytomi)/(avphy+self%bkzoo)) ! NIC: Changed from BLOM-iHAMOCC, now identical to formulation in Six and Maier-Reimer (1996)
          graton = self%epsher*(1._rk-self%zinges)*grazing
@@ -92,10 +84,10 @@ contains
          excdoc = self%gammaz*zoothresh                     ! excretion of doc by zooplankton
          pommor = zoomor*(1._rk-self%ecan)! + gratpoc
          dimmor = zoomor*self%ecan! + graton
-         domex = exdoc
+         domex = excdoc
          
-         _ADD_SOURCE_(self%id_zoo, (grawa-excod-zoomor)/dtbgc)
-         _ADD_SOURCE_(self%id_doc, exdoc/dtbgc)
+         _ADD_SOURCE_(self%id_zoo, (grawa-excdoc-zoomor)/dtbgc)
+         _ADD_SOURCE_(self%id_doc, excdoc/dtbgc)
          
          _SET_DIAGNOSTIC_(self%id_pommor, pommor)
          _SET_DIAGNOSTIC_(self%id_gratpoc, gratpoc)

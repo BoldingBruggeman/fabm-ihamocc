@@ -8,11 +8,14 @@ add_library(fabm_models_ihamocc OBJECT
             dms.F90
             alkalinization.F90
             iron.F90
-            ndep.F90
+            nitrogen.F90
             preftrc.F90
             phytoplankton.F90
             zooplankton.F90
             detritus.F90
+            cisonew.F90
+            natDIC.F90
+            mixed_layer.F90
             # List additional source code file
            )
 

@@ -10,12 +10,13 @@ module ihamocc_model_library
    use ihamocc_dms
    use ihamocc_alkalinization
    use ihamocc_iron
-   use ihamocc_ndep
+   use ihamocc_nitrogen
    use ihamocc_preftrc
    use ihamocc_phytoplankton
    use ihamocc_zooplankton
    use ihamocc_detritus
-
+   use ihamocc_cisonew
+   use ihamocc_mixed_layer
    implicit none
 
    private
@@ -43,11 +44,14 @@ contains
          case ('dms');               allocate(type_ihamocc_dms::model)
          case ('alkalinization');    allocate(type_ihamocc_alkalinization::model)    
          case ('iron');              allocate(type_ihamocc_iron::model)               
-         case ('ndep');              allocate(type_ihamocc_ndep::model) 
+         case ('nitrogen');          allocate(type_ihamocc_nitrogen::model) 
          case ('preftrc');           allocate(type_ihamocc_preftrc::model)
          case ('phytoplankton');     allocate(type_ihamocc_phytoplankton::model)
          case ('zooplankton');       allocate(type_ihamocc_zooplankton::model)
          case ('detritus');          allocate(type_ihamocc_detritus::model)    
+         case ('cisonew');           allocate(type_ihamocc_cisonew::model)    
+         case ('natDIC');            allocate(type_ihamocc_natDIC::model)    
+         case ('mixed_layer');       allocate(type_ihamocc_mixed_layer::model)
          ! Add new models here
          case default
             call self%type_base_model_factory%create(name, model)

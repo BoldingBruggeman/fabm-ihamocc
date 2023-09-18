@@ -26,9 +26,9 @@ contains
       class (type_ihamocc_iron), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      ! Register state dependencies
+      ! Register state variables
       call self%register_state_variable(self%id_iron, 'iron', 'kmol/m^3', 'dissolved iron')
-      call self%register_state_variable(self%id_fdust, 'fdust', , 'kg/m^3', 'non-aggregated dust deposition')
+      call self%register_state_variable(self%id_fdust, 'fdust', 'kg/m^3', 'non-aggregated dust deposition')
 
       ! Register environmental dependencies
       call self%register_dependency(self%id_dust, , 'dust', 'kg m-2 s-1', 'dust deposition rate')

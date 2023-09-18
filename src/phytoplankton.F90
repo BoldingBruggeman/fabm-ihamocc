@@ -11,7 +11,6 @@ module ihamocc_phytoplankton
 
    type, extends(type_base_model), public :: type_ihamocc_phytoplankton
       type (type_dependency_id) :: id_ptho, id_strahl, id_depth
-      type (type_surface_dependency_id) :: id_
       type (type_state_variable_id) :: id_phy, id_silica, id_sco212, id_phosph, id_det, id_oxygen, id_doc
       type (type_diagnostic_variable_id) :: id_phosy, id_exud, id_phymor
       
@@ -44,7 +43,6 @@ contains
 
       ! Register state variables
       call self%register_state_variable(self%id_phy, 'phy', 'kmol/m^3', 'phytoplankton', minimum=self%phytomi)
-      !call self%register_state_variable(self%id_fdust, 'fdust', , 'kg/m^3', 'non-aggregated dust deposition')
 
       ! Register environmental dependencies
       call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
