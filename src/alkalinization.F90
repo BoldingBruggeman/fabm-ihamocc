@@ -12,9 +12,7 @@ module ihamocc_alkalinization
    type, extends(type_base_model), public :: type_ihamocc_alkalinization
       type (type_surface_dependency_id) :: id_oafx
       type (type_state_variable_id) :: id_alkali
-
    contains
-      ! Model procedures
       procedure :: initialize
       procedure :: do_surface
    end type type_ihamocc_alkalinization
@@ -25,19 +23,16 @@ contains
       class (type_ihamocc_alkalinization), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      ! Register state dependencies
-      call self%register_state_dependency(self%id_alkali, 'alkali', , 'kmol/m^3', 'Alkalinity')
+      call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol/m^3', 'Alkalinity')
 
-      ! Register environmental dependencies
-      call self%register_dependency(self%id_oafx, , 'oafx', 'kmol m-2 s-1', 'ocean alkalinization flux')
-      
+      call self%register_dependency(self%id_oafx, 'oafx', 'kmol m-2 s-1', 'ocean alkalinization flux')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)
       class (type_ihamocc_alkalinization), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_SURFACE_
 
-      real(rk) :: 
+      real(rk) :: oafx
       
       _SURFACE_LOOP_BEGIN_
          _GET_SURFACE_(self%id_oafx, oafx)

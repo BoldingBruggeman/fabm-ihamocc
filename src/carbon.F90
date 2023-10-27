@@ -10,74 +10,70 @@ module ihamocc_carbon
    private
 
    type, extends(type_base_model), public :: type_ihamocc_carbon
-      type (type_dependency_id) :: id_psao, id_ptho, id_prho, id_prb, id_silica, id_hi_in, id_pddpo
-      type (type_surface_dependency_id) :: id_atco2, id_pfu10, id_psicomo
-      type (type_state_variable_id) :: id_sco212, id_alkali, id_calc
+      type (type_dependency_id) :: id_psao, id_ptho, id_prho, id_prb, id_hi_in, id_pddpo
+      type (type_surface_dependency_id) :: id_atco2, id_pfu10, id_psicomo, id_ppao
+      type (type_state_variable_id) :: id_sco212, id_alkali, id_calc, id_phosph, id_silica
       type (type_diagnostic_variable_id) :: id_hi, id_co2star, id_co3, id_omegaA, id_omegaC, id_Kw, id_dissol
-      type (type_surface_diagnostic_variable_id) ::  id_dicsat, id_co2fxd, id_co2fxu, id_pco2d, id_pco2m, id_kwco2sol, id_kwco2d, co2sold, co2solm
+      type (type_surface_diagnostic_variable_id) ::  id_dicsat, id_co2fxd, id_co2fxu, id_pco2d, id_pco2m, id_kwco2sol, id_kwco2d, id_co2sold, id_co2solm
    contains
-      ! Model procedures
       procedure :: initialize
       procedure :: do_surface
       procedure :: do
    end type type_ihamocc_carbon
-
 contains
 
    subroutine initialize(self, configunit)
       class (type_ihamocc_carbon), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      ! Register state variables
-      call self%register_state_variable(self%id_sco212, 'sco212', 'kmol/m^3', 'Dissolved co2')
-      call self%register_state_variable(self%id_alkali, 'alkali', 'kmol/m^3', 'Alkalinity')
-      call self%register_state_variable(self%id_calc,   'calc',   'kmol/m^3', 'Calcium carbonate')
+      call self%register_state_variable(self%id_sco212, 'sco212', 'kmol/m^3', 'Dissolved co2', minimum=0.0_rk)
+      call self%add_to_aggregate_variable(standard_variables%total_carbon,     self%id_sco212, scale_factor=1e6_rk)
+      call self%register_state_variable(self%id_alkali, 'alkali', 'kmol/m^3', 'Alkalinity', minimum=0.0_rk)
+      call self%register_state_variable(self%id_calc,   'calc',   'kmol/m^3', 'Calcium carbonate', minimum=0.0_rk)
+      call self%add_to_aggregate_variable(standard_variables%total_carbon,     self%id_calc, scale_factor=1e6_rk)
       
-      ! Register diagnostic variables
-      call self%register_diagnostic_variable(self%id_Kw, 'Kw', 'mol/kg', 'Water dissociation product')
-      call self%register_diagnostic_variable(self%id_hi, 'hi', 'mol/kg', 'Hydrogen ion concentration',missing_value=1.e-20)
-      call self%register_diagnostic_variable(self%id_co2star, 'co2star', 'mol/kg', 'Dissolved CO2 (CO2*)')
-      call self%register_diagnostic_variable(self%id_co3, 'co3', 'kmol/m3', 'Dissolved carbonate (CO3)')
-      call self%register_diagnostic_variable(self%id_dicsat, 'co3', 'kmol/m3', 'Saturated dic')
-      call self%register_diagnostic_variable(self%id_omegaA, 'omegaA', '-', 'omegaA')
-      call self%register_diagnostic_variable(self%id_omegaC, 'omegaC', '-', 'omegaC')
-      call self%register_diagnostic_variable(self%id_co2fxd, 'co2fxd', 'kmol/m2/s', 'Downwards co2 surface flux')
-      call self%register_diagnostic_variable(self%id_co2fxu, 'co2fxu', 'kmol/m2/s', 'Downwards co2 surface flux')
-      call self%register_diagnostic_variable(self%id_pco2d,  'pco2d', 'microatm', 'Dry air co2 pressure')
-      call self%register_diagnostic_variable(self%id_pco2m,  'pco2m', 'microatm', 'Moist air co2 pressure')
+      call self%register_diagnostic_variable(self%id_Kw,       'Kw',       'mol/kg',              'Water dissociation product')
+      call self%register_diagnostic_variable(self%id_hi,       'hi',       'mol/kg',              'Hydrogen ion concentration',missing_value=1.e-20_rk)
+      call self%register_diagnostic_variable(self%id_co2star,  'co2star',  'mol/kg',              'Dissolved CO2 (CO2*)')
+      call self%register_diagnostic_variable(self%id_co3,      'co3',      'kmol/m3',             'Dissolved carbonate (CO3)')
+      call self%register_diagnostic_variable(self%id_dicsat,   'dicsat',   'kmol/m3',             'Saturated dic')
+      call self%register_diagnostic_variable(self%id_omegaA,   'omegaA',   '-',                   'omegaA')
+      call self%register_diagnostic_variable(self%id_omegaC,   'omegaC',   '-',                   'omegaC')
+      call self%register_diagnostic_variable(self%id_co2fxd,   'co2fxd',   'kmol/m2/s',           'Downwards co2 surface flux')
+      call self%register_diagnostic_variable(self%id_co2fxu,   'co2fxu',   'kmol/m2/s',           'Downwards co2 surface flux')
+      call self%register_diagnostic_variable(self%id_pco2d,    'pco2d',    'microatm',            'Dry air co2 pressure')
+      call self%register_diagnostic_variable(self%id_pco2m,    'pco2m',    'microatm',            'Moist air co2 pressure')
       call self%register_diagnostic_variable(self%id_kwco2sol, 'kwco2sol', 'm/s mol/kg/microatm', 'kwco2sol')
-      call self%register_diagnostic_variable(self%id_kwco2d, 'kwco2d', 'm/s', 'kwco2d')
-      call self%register_diagnostic_variable(self%id_co2sold, 'co2sold', 'mol/kg/atm', 'co2sold')
-      call self%register_diagnostic_variable(self%id_co2solm, 'co2solm', 'mol/kg/atm', 'co2solm')
-      call self%register_diagnostic_variable(self%id_dissol, 'dissol', 'kmol/m^3', 'dissol')
+      call self%register_diagnostic_variable(self%id_kwco2d,   'kwco2d',   'm/s',                 'kwco2d')
+      call self%register_diagnostic_variable(self%id_co2sold,  'co2sold',  'mol/kg/atm',          'co2sold')
+      call self%register_diagnostic_variable(self%id_co2solm,  'co2solm',  'mol/kg/atm',          'co2solm')
+      call self%register_diagnostic_variable(self%id_dissol,   'dissol',   'kmol/m^3',            'dissol')
       
-      ! Register environmental dependencies
-      call self%register_dependency(self%id_hi_in, 'hi', 'mol/kg', 'Hydrogen ion concentration')
-      call self%register_dependency(self%id_psao, standard_variables%practical_salinity)
-      call self%register_dependency(self%id_ptho, standard_variables%temperature)
-      call self%register_dependency(self%id_prho, standard_variables%density)
-      call self%register_dependency(self%id_prb, standard_variables%pressure)
-      call self%register_dependency(self%id_pddpo, standard_variables%cell_thickness)
-      call self%register_dependency(self%id_pfu10, standard_variables%wind_speed)
-      call self%register_dependency(self%id_psicomo, standard_variables%ice_area_fraction)
-      call self%register_dependency(self%id_atco2, 'atco2', '-', 'surface air carbon dioxide mixing ratio') ! atmospheric co2 mixing ratio (i.e. partial presure = mixing ratio*SLP/P_0 [atm]) 
-      call self%register_dependency(self%id_ppao, standard_variables%surface_air_pressure) ! surface air pressure in pascal
+      call self%register_dependency(self%id_ppao,         standard_variables%surface_air_pressure) ! surface air pressure in pascal
+      call self%register_dependency(self%id_psao,         standard_variables%practical_salinity)
+      call self%register_dependency(self%id_ptho,         standard_variables%temperature)
+      call self%register_dependency(self%id_prho,         standard_variables%density)
+      call self%register_dependency(self%id_prb,          standard_variables%pressure)
+      call self%register_dependency(self%id_pddpo,        standard_variables%cell_thickness)
+      call self%register_dependency(self%id_pfu10,        standard_variables%wind_speed)
+      call self%register_dependency(self%id_psicomo,      standard_variables%ice_area_fraction)
+      call self%register_dependency(self%id_atco2,        'atco2',  '-',        'surface air carbon dioxide mixing ratio') ! atmospheric co2 mixing ratio (i.e. partial presure = mixing ratio*SLP/P_0 [atm]) 
+      call self%register_dependency(self%id_hi_in,        'hi',     'mol/kg',   'Hydrogen ion concentration')
       call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
-      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved hosphate')
-      
-      ! Register diagnostic variables
-      
-            
+      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved phosphate')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)
       class (type_ihamocc_carbon), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_SURFACE_
 
-      real(rk) :: t, t2, t3, t4, tk, tk100, s, psao, ptho, prho, prb, sco212, alkali, silica, phosph, hi, cu, ac, K1, K2, pco2, scco2, ppao, pfu10, kwco2, rpp0, fluxu, fluxd, ta
+      real(rk) :: t, t2, t3, t4, tk, tk100, s, psao, ptho, prho, prb, sco212, alkali, silica, phosph, hi, cu, ac, K1, K2, pco2
+      real(rk) :: pddpo, scco2, ppao, pfu10, kwco2, rpp0, fluxu, fluxd, ta, atco2, psicomo, rrho, tc, sit, pt, ah1, Ks1, Kw, Kf
+      real(rk) :: Kh, Kb, Ksi, Khd, K3p, K1p, Kspc, K2p, Kspa, tc_sat, dicsat
+      integer ::  niter
       
       _SURFACE_LOOP_BEGIN_
-         _GET_(self%id_id_ptho, ptho)
+         _GET_(self%id_ptho, ptho)
          _GET_(self%id_psao, psao)
          _GET_(self%id_pddpo, pddpo)
          _GET_(self%id_prho, prho)
@@ -109,7 +105,8 @@ contains
          sit  = silica / rrho
          pt   = phosph / rrho
          ah1  = hi
-   
+         niter = 20
+         
          CALL CARCHM_KEQUI(t,s,prb,Kh,Khd,K1,K2,Kb,Kw,Ks1,Kf,Ksi,             &
                            K1p,K2p,K3p,Kspc,Kspa)
    
@@ -158,7 +155,10 @@ contains
       class (type_ihamocc_carbon), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
 
-      real(rk) :: t, t2, t3, t4, tk, tk100, s, psao, ptho, prho, prb, sco212, silica, phosph, alkali, hi, cu, ac, K1, K2, cb, cc, co2star, c03, omega, OmegaA, OmegaC, calc
+      real(rk) :: t, t2, t3, t4, tk, tk100, s, psao, ptho, prho, prb, sco212, silica, phosph, alkali, hi, cu, ac, K1, K2, cb, cc, co2star
+      real(rk) :: tc, ta, sit, pt, ah1, c03, omega, OmegaA, OmegaC, calc, rrho, Ks1, Kw, co3, Kf, Kb, Ksi, K3p, Kspa, K1p, Kspc, Khd, Kh
+      real(rk) :: supsat, undsa, K2p, dissol
+      integer  :: niter
       
       _LOOP_BEGIN_
          _GET_(self%id_ptho, ptho)
@@ -182,13 +182,14 @@ contains
          tk100= tk/100.0_rk
          s    = min(40._rk,max( 25._rk,psao))
          rrho = prho/1000.0_rk                ! seawater density [kg/m3]->[g/cm3]
-         prb  = prb*10._rk  !convert from dbar to bar. ORIGINAL: ptiestu(i,j,k)*98060*1.027e-6_rk ! pressure in unit bars, 98060 = onem
+         prb  = prb/10._rk  !convert from dbar to bar. ORIGINAL: ptiestu(i,j,k)*98060*1.027e-6_rk ! pressure in unit bars, 98060 = one
    
          tc   = sco212 / rrho  ! convert to mol/kg
          ta   = alkali / rrho
          sit  = silica / rrho
          pt   = phosph / rrho
          ah1  = hi
+         niter = 20
    
          CALL CARCHM_KEQUI(t,s,prb,Kh,Khd,K1,K2,Kb,Kw,Ks1,Kf,Ksi,             &
                            K1p,K2p,K3p,Kspc,Kspa)
@@ -214,21 +215,6 @@ contains
          undsa=MAX(0._rk,-supsat)
          dissol=MIN(undsa,0.05_rk*calc)
 
-
-!      ! Save bottom level dissociation konstants for use in sediment module    NIC: These can be calculated in the carbon.f90 do_bottom subroutine
-!      if( k==kbo(i,j) ) then
-!        keqb( 1,i,j)  = K1
-!        keqb( 2,i,j)  = K2
-!        keqb( 3,i,j)  = Kb
-!        keqb( 4,i,j)  = Kw
-!        keqb( 5,i,j)  = Ks1
-!        keqb( 6,i,j)  = Kf
-!        keqb( 7,i,j)  = Ksi
-!        keqb( 8,i,j)  = K1p
-!        keqb( 9,i,j)  = K2p
-!        keqb(10,i,j)  = K3p
-!        keqb(11,i,j)  = Kspc
-!      end if
          if(ah1.gt.0.) then
             _SET_DIAGNOSTIC_(self%id_hi, max(1.e-20_rk,ah1))
          else

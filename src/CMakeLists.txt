@@ -9,14 +9,16 @@ add_library(fabm_models_ihamocc OBJECT
             alkalinization.F90
             iron.F90
             nitrogen.F90
-            preftrc.F90
+            preformed_tracer.F90
             phytoplankton.F90
             zooplankton.F90
             detritus.F90
             cisonew.F90
             natDIC.F90
             mixed_layer.F90
-            # List additional source code file
+            sediment_bypass.F90
+            light.F90
+            tracer.F90
            )
 
 add_dependencies(fabm_models_ihamocc fabm_base)
