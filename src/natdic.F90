@@ -10,16 +10,15 @@ module ihamocc_natdic
    private
 
    type, extends(type_base_model), public :: type_ihamocc_natdic
-      type (type_dependency_id) :: id_psao, id_ptho, id_prho, id_prb, id_silica, id_hi_in, id_pddpo, id_phytomi, id_phosy, id_phymor, id_phyrem, id_pommor, id_dimmor, id_phosy
-      type (type_dependency_id) :: id_exud, id_graton, id_grawa, id_gratpoc, id_domex, id_pocrem, id_docrem, id_delcar_part, id_rdnit1, id_dano3
-      type (type_surface_dependency_id) :: id_atmc13, id_atmc14, id_kwco2sol
-      type (type_state_variable_id) :: id_sco212, id_calc13, id_calc13, id_calc, id_sco213, id_sco214, id_phy, id_doc
-      type (type_diagnostic_variable_id) :: id_co213fxd, id_co213fxu, id_co214fxd, id_co214fxu
-      
-      real(rk) :: 
-      
+      type (type_dependency_id) :: id_psao, id_ptho, id_prho, id_prb, id_pddpo, id_phosy, id_phyrem, id_dimmor
+      type (type_dependency_id) :: id_graton, id_pocrem, id_docrem, id_rdnit1, id_dano3, id_nathi_in, id_remin2o
+      type (type_dependency_id) :: id_remin, id_delcar, id_depth, id_wcal
+      type (type_surface_dependency_id) :: id_pfu10, id_psicomo, id_ppao
+      type (type_state_variable_id) :: id_natcalc, id_natsco212, id_natalkali, id_phosph, id_silica, id_oxygen, id_ano3
+      type (type_diagnostic_variable_id) :: id_nathi, id_natco3, id_natomegaA, id_natomegaC
+      type (type_surface_diagnostic_variable_id) :: id_natco2fxd, id_natco2fxu, id_natpco2d
+      real(rk) :: atco2_nat
    contains
-      ! Model procedures
       procedure :: initialize
       procedure :: do_surface
       procedure :: do
@@ -32,79 +31,76 @@ contains
       class (type_ihamocc_natdic), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      ! Register parameters
-      call self%get_parameter(self%c14_t_half, 'c14_t_half', 'd','c14_t_half', default=5730._rk*365._rk) ! 
-
+      call self%get_parameter(self%atco2_nat, 'atco2_nat', 'ppm','CMIP6 pre-industrial reference CO2 atm concentration', default=284.32_rk)
       
-      ! Register environmental dependencies
-      call self%register_dependency(self%id_atco2_nat, 'atco2_nat', '-', 'surface air natural carbon dioxide mixing ratio') ! atmospheric co2 mixing ratio (i.e. partial presure = mixing ratio*SLP/P_0 [atm]) 
-      call self%register_dependency(self%id_nathi_in, 'nathi', 'mol/kg', 'Hydrogen ion concentration')
-      call self%register_dependency(self%id_psao, standard_variables%practical_salinity)
-      call self%register_dependency(self%id_ptho, standard_variables%temperature)
-      call self%register_dependency(self%id_prho, standard_variables%density)
-      call self%register_dependency(self%id_prb, standard_variables%pressure)
-      call self%register_dependency(self%id_pddpo, standard_variables%cell_thickness)
-      call self%register_dependency(self%id_pfu10, standard_variables%wind_speed)
-      call self%register_dependency(self%id_psicomo, standard_variables%ice_area_fraction)
-      call self%register_dependency(self%id_ppao, standard_variables%surface_air_pressure) ! surface air pressure in pascal
-      call self%register_dependency(self%id_remin2o, 'remin2o', 'kmol/m^3 d-1', 'remin2o')
-      call self%register_dependency(self%id_remin, 'remin', 'kmol/m^3 d-1', 'remin')
-      call self%register_dependency(self%id_phyrem, 'phyrem', 'kmol/m3/d', 'photosynthetic remineralization rate')
-      call self%register_dependency(self%id_dimmor, 'dimmor', 'kmol/m3/d', 'zooplankton dissolved inorganic export from mortality')
-      call self%register_dependency(self%id_phosy, 'phosy', 'kmol/m3/d', 'photosynthetic rate')
-      call self%register_dependency(self%id_graton, 'graton', 'kmol/m3/d', 'zooplankton sloppy feeding inorganic release rate')
-      call self%register_dependency(self%id_pocrem, 'pocrem', 'kmol/m^3 d-1', 'deep remineralization of POC') 
-      call self%register_dependency(self%id_docrem, 'docrem', 'kmol/m^3 d-1', 'deep remineralization of DOC')
-      call self%register_dependency(self%id_delcar, 'delcar', 'kmol/m^3 d-1', 'delcar')
-      call self%register_dependency(self%id_rdnit1, 'rdnit1', '-', 'rdnit1') !for natdic.f90
-      call self%register_dependency(self%id_dano3, 'dano3', 'kmol/m^3 d-1', 'dano3') 
+      call self%register_dependency(self%id_psao,      standard_variables%practical_salinity)
+      call self%register_dependency(self%id_ptho,      standard_variables%temperature)
+      call self%register_dependency(self%id_prho,      standard_variables%density)
+      call self%register_dependency(self%id_prb,       standard_variables%pressure)
+      call self%register_dependency(self%id_pddpo,     standard_variables%cell_thickness)
+      call self%register_dependency(self%id_pfu10,     standard_variables%wind_speed)
+      call self%register_dependency(self%id_psicomo,   standard_variables%ice_area_fraction)
+      call self%register_dependency(self%id_ppao,      standard_variables%surface_air_pressure) ! surface air pressure in pascal
+      call self%register_dependency(self%id_depth,     standard_variables%depth)
+      call self%register_dependency(self%id_nathi_in,  'nathi',     'mol/kg',       'Hydrogen ion concentration')
+      call self%register_dependency(self%id_remin2o,   'remin2o',   'kmol/m^3 d-1', 'remin2o')
+      call self%register_dependency(self%id_remin,     'remin',     'kmol/m^3 d-1', 'remin')
+      call self%register_dependency(self%id_phyrem,    'phyrem',    'kmol/m3/d',    'photosynthetic remineralization rate')
+      call self%register_dependency(self%id_dimmor,    'dimmor',    'kmol/m3/d',    'zooplankton dissolved inorganic export from mortality')
+      call self%register_dependency(self%id_phosy,     'phosy',     'kmol/m3/d',    'photosynthetic rate')
+      call self%register_dependency(self%id_graton,    'graton',    'kmol/m3/d',    'zooplankton sloppy feeding inorganic release rate')
+      call self%register_dependency(self%id_pocrem,    'pocrem',    'kmol/m^3 d-1', 'deep remineralization of POC') 
+      call self%register_dependency(self%id_docrem,    'docrem',    'kmol/m^3 d-1', 'deep remineralization of DOC')
+      call self%register_dependency(self%id_delcar,    'delcar',    'kmol/m^3 d-1', 'delcar')
+      call self%register_dependency(self%id_rdnit1,    'rdnit1',    '-',            'rdnit1') !for natdic.f90
+      call self%register_dependency(self%id_dano3,     'dano3',     'kmol/m^3 d-1', 'dano3') 
+      call self%register_dependency(self%id_wcal,      'wcal',      'm d-1',        'calcium carbonate sinking speed')
       
       ! Register state variables
-      call self%register_state_variable(self%id_natcalc,   'natcalc',   'kmol/m^3', 'Natural Calcium carbonate)
-      call self%register_state_variable(self%id_natsco212, 'natsco212', 'kmol/m^3', 'Dissolved natural co2')
-      call self%register_state_variable(self%id_natalkali, 'natalkali', 'kmol/m^3', 'Natural alkalinity')
+      call self%register_state_variable(self%id_natcalc,   'natcalc',   'kmol/m^3', 'Natural Calcium carbonate', minimum=0.0_rk)
+      call self%register_state_variable(self%id_natsco212, 'natsco212', 'kmol/m^3', 'Dissolved natural co2', minimum=0.0_rk)
+      call self%register_state_variable(self%id_natalkali, 'natalkali', 'kmol/m^3', 'Natural alkalinity', minimum=0.0_rk)
 
       ! Register environmental dependencies
       call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
       call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved hosphate')
+      call self%register_state_dependency(self%id_oxygen, 'oxygen', 'kmol/m3',  'Dissolved oxygen')
+      call self%register_state_dependency(self%id_ano3,   'ano3',   'kmol/m^3', 'Dissolved nitrate')
 
       ! Register diagnostic variables
-      call self%register_diagnostic_variable(self%id_nathi,     'nathi',     'mol/kg',    'Natural Hydrogen ion concentration',missing_value=1.e-20)
+      call self%register_diagnostic_variable(self%id_nathi,     'nathi',     'mol/kg',    'Natural Hydrogen ion concentration', missing_value=1.e-20_rk)
       call self%register_diagnostic_variable(self%id_natco3,    'natco3',    'kmol/m3',   'Natural Dissolved carbonate (CO3)')
       call self%register_diagnostic_variable(self%id_natco2fxd, 'natco2fxd', 'kmol/m2/s', 'Natural Downwards co2 surface flux')
       call self%register_diagnostic_variable(self%id_natco2fxu, 'natco2fxu', 'kmol/m2/s', 'Natural Downwards co2 surface flux')
       call self%register_diagnostic_variable(self%id_natpco2d,  'natpco2d',  'microatm',  'Natural Dry air co2 pressure')
-      call self%register_diagnostic_variable(self%id_natomegaA, 'natomegaA', '-', 'natomegaA')
-      call self%register_diagnostic_variable(self%id_natomegaC, 'natomegaC', '-', 'natomegaC')
-
-
-
-
+      call self%register_diagnostic_variable(self%id_natomegaA, 'natomegaA', '-',         'natomegaA')
+      call self%register_diagnostic_variable(self%id_natomegaC, 'natomegaC', '-',         'natomegaC')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)
       class (type_ihamocc_natdic), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_SURFACE_
 
-      real(rk) :: t, t2, t3, t4, tk, tk100, s, psao, ptho, prho, prb, natsco212, natalkali, silica, phosph, hi, cu, ac, K1, K2, pco2, scco2, ppao, pfu10, kwco2, rpp0, fluxu, fluxd, ta
+      real(rk) :: t, t2, t3, t4, tk, tk100, s, psao, ptho, prho, prb, natsco212, natalkali, silica, phosph, hi, cu, ac, K1, K2, pco2, scco2, ppao
+      real(rk) :: pfu10, kwco2, rpp0, fluxu, fluxd, ta, nathi, psicomo, pddpo, rrho, tc, sit, pt, ah1, Ksi, Kw, Kf, Khd, Ks1, Kh, Kb, K2p, K3p
+      real(rk) :: Kspa, Kspc, K1p, natcu, natcb, natcc, natco3, natpco2, natfluxd, natfluxu
+      integer  :: niter
       
       _SURFACE_LOOP_BEGIN_
          _GET_(self%id_natsco212, natsco212)
          _GET_(self%id_natalkali, natalkali)
-         _GET_(self%id_id_ptho, ptho)
+         _GET_(self%id_ptho, ptho)
          _GET_(self%id_psao, psao)
          _GET_(self%id_nathi_in, nathi)
          _GET_(self%id_silica, silica)
          _GET_SURFACE_(self%id_psicomo, psicomo)
          _GET_SURFACE_(self%id_pfu10, pfu10)
          _GET_SURFACE_(self%id_ppao, ppao)
-         _GET_SURFACE_(self%id_atco2_nat, atco2_nat)
          _GET_(self%id_prb, prb)
          _GET_(self%id_pddpo, pddpo)
          _GET_(self%id_prho, prho)
          _GET_(self%id_phosph, phosph)
 
-         
          ! Carbon chemistry: Calculate equilibrium constants and solve for [H+] and
          ! carbonate alkalinity (ac)
          t    = min(40._rk,max(-3._rk,ptho))
@@ -121,7 +117,7 @@ contains
          ta   = natalkali / rrho
          sit  = silica / rrho
          pt   = phosph / rrho
-         ah1  = hi
+         ah1  = nathi
    
          CALL CARCHM_KEQUI(t,s,prb,Kh,Khd,K1,K2,Kb,Kw,Ks1,Kf,Ksi,             &
                            K1p,K2p,K3p,Kspc,Kspa)
@@ -148,7 +144,7 @@ contains
          ! mixing ratio (i.e. partial presure = mixing ratio*SLP/P_0 [atm])
          rpp0 = ppao/atm2pa
 
-         natfluxd=atco2_nat*rpp0*kwco2*dtbgc*Kh*1.e-6_rk*rrho ! Kh is in mol/kg/atm. Multiply by rrho (g/cm^3) to get fluxes in kmol/m^2   NOTE: originally multiplied by dtbgc (86400s/d). Removed as FABM rates-of-change has units s-1
+         natfluxd=self%atco2_nat*rpp0*kwco2*dtbgc*Kh*1.e-6_rk*rrho ! Kh is in mol/kg/atm. Multiply by rrho (g/cm^3) to get fluxes in kmol/m^2   NOTE: originally multiplied by dtbgc (86400s/d). Removed as FABM rates-of-change has units s-1
          natfluxu=natpco2      *kwco2*dtbgc*Kh*1.e-6_rk*rrho
          natfluxu=min(natfluxu,natfluxd-(1.e-5_rk - natsco212)*pddpo) !JT set limit for CO2 outgassing to avoid negative DIC concentration, set minimum DIC concentration to 1e-5 kmol/m3 
          
@@ -163,8 +159,12 @@ contains
    subroutine do(self, _ARGUMENTS_DO_SURFACE_)
       class (type_ihamocc_natdic), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
-
-      real(rk) :: 
+      
+      real(rk) :: ptho, psao, prho, prb, natsco212, natalkali, nathi, silica, phosph, natcalc, t, s, rrho, tc, alkali, ta, sit, pt, ah1
+      real(rk) :: Kw, Kb, K1, Ks1, Ksi, K2, Khd, Kf, Kh, K3p, Kspc, Kspa, K1p, K2p, ac, natcu, natcb, natcc, cc, natco3, natomega, natOmegaA
+      real(rk) :: natOmegaC, natsupsat, natundsa, natdissol, natcalc_roc, natalkali_roc, natsco212_roc, delcar, docrem, phosy, graton
+      real(rk) :: dimmor, phyrem, pocrem, remin2o, remin, rdnit1, dano3, oxygen, ano3, depth
+      integer  :: niter
       
       _LOOP_BEGIN_
          _GET_(self%id_ptho, ptho)
@@ -191,7 +191,7 @@ contains
          prb  = prb*10._rk  !convert from dbar to bar. ORIGINAL: ptiestu(i,j,k)*98060*1.027e-6_rk ! pressure in unit bars, 98060 = onem
          !
          tc   = natsco212 / rrho  ! convert to mol/kg
-         ta   = alkali / rrho
+         ta   = natalkali / rrho
          sit  = silica / rrho
          pt   = phosph / rrho
          ah1  = nathi
@@ -211,7 +211,6 @@ contains
          ! Carbonate ion concentration, convert from mol/kg to kmol/m^3 
          natco3  = cc * rrho 
    
-         ! -----------------------------------------------------------------
          ! Deep ocean processes
          natomega = ( calcon * s / 35._rk ) * natcc           ! Determine Omega Calcite/Aragonite and dissolution of caco3 based on OmegaC:
          natOmegaA = natomega / Kspa                          !   omegaC=([CO3]*[Ca])/([CO3]sat*[Ca]sat)
@@ -220,7 +219,7 @@ contains
          natundsa=MAX(0._rk,-natsupsat)
          natdissol=MIN(natundsa,0.05_rk*natcalc)
 
-         if(ah1.gt.0.) then
+         if(ah1.gt.0._rk) then
             _SET_DIAGNOSTIC_(self%id_nathi, max(1.e-20_rk,ah1))
          else
             _SET_DIAGNOSTIC_(self%id_nathi, nathi)
@@ -244,7 +243,10 @@ contains
          _GET_(self%id_remin,remin)
          _GET_(self%id_rdnit1,rdnit1)
          _GET_(self%id_dano3,dano3)
-         
+         _GET_(self%id_oxygen,oxygen)
+         _GET_(self%id_ano3,ano3)
+         _GET_(self%id_depth,depth)
+
          !rocs
          natsco212_roc = natsco212_roc - delcar + rcar*(pocrem - phosy + graton + dimmor + docrem + phyrem + remin2o)
          natcalc_roc   = natcalc_roc   + delcar
@@ -254,7 +256,7 @@ contains
              natalkali_roc = natalkali_roc + (rdnit1-1._rk)*remin - remin2o
          endif
          
-         _ADD_SOURCE_(self%id_natcalc,natcalc_roc/dtbgc)
+         _ADD_SOURCE_(self%id_natcalc,  natcalc_roc/dtbgc)
          _ADD_SOURCE_(self%id_natalkali,natalkali_roc/dtbgc)
          _ADD_SOURCE_(self%id_natsco212,natsco212_roc/dtbgc)
       _LOOP_END_
@@ -267,10 +269,9 @@ contains
       real(rk) :: wcal
       
       _LOOP_BEGIN_
-         _GET_(id_wcal,wcal)
+         _GET_(self%id_wcal,wcal)
          
-         _ADD_VERTICAL_VELOCITY_(self%id_natcalc, -wcal)
+         _ADD_VERTICAL_VELOCITY_(self%id_natcalc, -wcal/dtbgc)
       _LOOP_END_
    end subroutine get_vertical_movement
-   
 end module ihamocc_natdic

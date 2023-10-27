@@ -10,13 +10,12 @@ module ihamocc_bromo
    private
 
    type, extends(type_base_model), public :: type_ihamocc_bromo
-      type (type_dependency_id) :: id_psao, id_ptho, id_hi, id_Kw, id_phosy, id_bkopal, id_depth
+      type (type_dependency_id) :: id_psao, id_ptho, id_hi, id_Kw, id_phosy, id_bkopal, id_depth, id_uv, id_swa_clim
       type (type_surface_dependency_id) :: id_psicomo, id_pfu10, id_atmbromo, id_ppao
-      type (type_state_variable_id) :: id_oxygen, id_silica
+      type (type_state_variable_id) :: id_oxygen, id_silica, id_bromo
       type (type_surface_diagnostic_variable_id) ::  id_bromoflx
-
+      real(rk) :: rbro, fbro1, fbro2
    contains
-      ! Model procedures
       procedure :: initialize
       procedure :: do_surface
       procedure :: do
@@ -28,34 +27,28 @@ contains
       class (type_ihamocc_bromo), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      ! Register parameters
-      call self%get_parameter(self%rbro, 'rbro', '-','rbro', default=2.4e-6_rk*rnit)
-      call self%get_parameter(self%fbro1,'fbro1', '-','fbro1', default=1._rk*rnit)
-      call self%get_parameter(self%fbro2,'fbro2', '-','fbro2', default=1._rk*rnit)
+      call self%get_parameter(self%rbro, 'rbro',  '-', 'rbro',  default=2.4e-6_rk*rnit)
+      call self%get_parameter(self%fbro1,'fbro1', '-', 'fbro1', default=1._rk*rnit)
+      call self%get_parameter(self%fbro2,'fbro2', '-', 'fbro2', default=1._rk*rnit)
       
-      ! Register state variables
-      call self%register_state_variable(self%id_bromo, 'bromoform', 'kmol/m^3', 'Dissolved bromoform')
+      call self%register_state_variable(self%id_bromo, 'bromoform', 'kmol/m^3', 'Dissolved bromoform', minimum=0.0_rk)
 
-      ! Register environmental dependencies
-      call self%register_dependency(self%id_depth, standard_variables%depth)
-      call self%register_dependency(self%id_ptho, standard_variables%temperature)
-      call self%register_dependency(self%id_psicomo, standard_variables%ice_area_fraction)
-      call self%register_dependency(self%id_pfu10, standard_variables%wind_speed)
-      call self%register_dependency(self%id_atmbromo, standard_variables%surface_air_bromoform_concentration) 
-      call self%register_dependency(self%id_ppao, standard_variables%surface_air_pressure) ! surface air pressure in pascal
-      call self%register_dependency(self%id_hi, 'hi', 'mol/kg', 'Hydrogen ion concentration')
-      call self%register_dependency(self%id_Kw, 'kW', 'mol/kg', 'Water dissociation product')
-      call self%register_dependency(self%id_phosy, 'phosy', 'kmol/m3/d', 'photosynthetic production')
-      call self%register_dependency(self%id_bkopal, 'bkopal', 'kmol Si/m3','half sat. constant for opal')
-      call self%register_dependency(self%id_strahl, standard_variables%downwelling_shortwave_flux)
-      call self%register_dependency(self%id_swa_clim, 'swa_clim', '??', 'swa climatology field')
-      call self%register_dependency(self%id_phosy, 'phosy', 'kmol/m3/d', 'photosynthetic rate')
+      call self%register_dependency(self%id_depth,    standard_variables%depth)
+      call self%register_dependency(self%id_ptho,     standard_variables%temperature)
+      call self%register_dependency(self%id_psicomo,  standard_variables%ice_area_fraction)
+      call self%register_dependency(self%id_pfu10,    standard_variables%wind_speed)
+      call self%register_dependency(self%id_ppao,     standard_variables%surface_air_pressure) ! surface air pressure in pascal
+      call self%register_dependency(self%id_atmbromo, 'atmbromo', '-',          'surface air bromoform mixing ratio') 
+      call self%register_dependency(self%id_uv,       'uv',       'W/m^2',      'remaining uv light not absorbed above')
+      call self%register_dependency(self%id_hi,       'hi',       'mol/kg',     'Hydrogen ion concentration')
+      call self%register_dependency(self%id_Kw,       'kW',       'mol/kg',     'Water dissociation product')
+      call self%register_dependency(self%id_phosy,    'phosy',    'kmol/m3/d',  'photosynthetic production')
+      call self%register_dependency(self%id_bkopal,   'bkopal',   'kmol Si/m3', 'half sat. constant for opal')
+      call self%register_dependency(self%id_swa_clim, 'swa_clim', '??',         'swa climatology field')
+      call self%register_dependency(self%id_phosy,    'phosy',    'kmol/m3/d',  'photosynthetic rate')
 
-      
-      ! Register state dependencies
       call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
       
-      ! Register diagnostic variables
       call self%register_diagnostic_variable(self%id_bromoflx, 'bromoflx', 'kmol/m2/s', 'Bromoform surface flux')
 
    end subroutine
@@ -64,16 +57,15 @@ contains
       class (type_ihamocc_bromo), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_SURFACE_
 
-      real(rk) :: t, t2, t3, tk, ptho, ppao, atmbrf, bromo, psicomo, pfu10, flx_bromo, kw_bromo, a_bromo, sch_bromo
+      real(rk) :: t, t2, t3, tk, ptho, ppao, atmbrf, bromo, psicomo, pfu10, flx_bromo, kw_bromo, a_bromo, sch_bromo, atbrf
             
       _SURFACE_LOOP_BEGIN_
          _GET_(self%id_bromo, bromo)
-         _GET_(self%id_id_ptho, ptho)
+         _GET_(self%id_ptho, ptho)
          _GET_SURFACE_(self%id_psicomo, psicomo)
          _GET_SURFACE_(self%id_atmbromo, atbrf)
          _GET_SURFACE_(self%id_ppao, ppao)
          _GET_SURFACE_(self%id_pfu10, pfu10)
-         
          
          t = min(40._rk,max(-3._rk,ptho))
          t2   = t**2
@@ -101,7 +93,7 @@ contains
       class (type_ihamocc_bromo), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
 
-      real(rk) :: t, tk, hi, ah1, Kb1, rocbromo, Kb1, lsub, ah1, bromo, Kw, phosy, bkopal, strahl, swa_clim, bro_beta
+      real(rk) :: t, tk, hi, ah1, Kb1, rocbromo, lsub, bromo, Kw, phosy, bkopal, uv, swa_clim, bro_beta, bro_uv, depth, ptho, silica, avsil  
       
       _LOOP_BEGIN_
          _GET_(self%id_bromo, bromo)
@@ -109,10 +101,9 @@ contains
          _GET_(self%id_Kw,Kw)
          _GET_(self%id_phosy,phosy)
          _GET_(self%id_bkopal,bkopal)
-         _GET_(self%id_strahl,strahl)
+         _GET_(self%id_uv,uv)
          _GET_(self%id_swa_clim,swa_clim)
          _GET_(self%id_depth, depth)             
-
 
          ! Carbon chemistry: Calculate equilibrium constants and solve for [H+] and
          ! carbonate alkalinity (ac)
@@ -120,7 +111,6 @@ contains
          tk   = t + tzero
    
          ah1  = hi
-         
          
          Kb1=2.05e12_rk*exp(-1.073e5_rk/(8.314_rk*tk))*dtbgc ! Degradation to hydrolysis (Eq. 2-4 of Stemmler et al., 2015) A1=1.23e17 mol min-1 => 2.05e12 kmol sec-1 
          
@@ -134,7 +124,11 @@ contains
              avsil = max(0.0_rk,silica)
              bro_beta = self%rbro*(self%fbro1*avsil/(avsil+bkopal)+self%fbro2*bkopal/(avsil+bkopal))
              
-             !!!! ADD uv photolysis !!!!
+             if (swa_clim > 0._rk) then
+                  bro_uv = 0.0333_rk*0.3_rk*uv/swa_clim*bromo
+             else
+                  bro_uv = 0.0_rk
+             endif
              
              rocbromo = rocbromo + bro_beta*phosy - bro_uv
          endif
