@@ -36,7 +36,7 @@ module ihamocc_nitrogen
    real(rk), parameter :: bl1 = -0.056235_rk
    real(rk), parameter :: bl2 = 0.031619_rk
    real(rk), parameter :: bl3 = -0.0048472_rk
-   real(rk), parameter :: atn2 = 196800._rk   ! atmospheric nitrogen concentration in PPM
+   real(rk), parameter :: atn2 = 802000._rk   ! atmospheric nitrogen concentration in PPM
    real(rk), parameter :: atn2o = 3.e-7_rk   ! atmospheric laughing gas concentration in PPM
    
 contains                                                                          
@@ -84,7 +84,7 @@ contains
       _DECLARE_ARGUMENTS_DO_SURFACE_
 
       real(rk) :: ndep, ptho, psao, psicomo, ppao, pfu10, t, t2, t3, t4, tk, tk100, s, scn2, scn2o, ani, anisa, rs, satn2o, kwn2
-      real(rk) :: gasnit, kwn2o, niflux, n2oflux, atn2, rpp0, an2o
+      real(rk) :: gasnit, kwn2o, niflux, n2oflux, rpp0, an2o
       
       _SURFACE_LOOP_BEGIN_
          _GET_SURFACE_(self%id_ndep_in, ndep)
@@ -126,8 +126,8 @@ contains
          ! Surface flux of laughing gas (same piston velocity as for O2 and N2)
          n2oflux=kwn2o*(an2o-satn2o*atn2o*rpp0) 
          
-         _ADD_SURFACE_FLUX_(self%id_an2o,       n2oflux) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
-         _ADD_SURFACE_FLUX_(self%id_gasnit,     niflux)  ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
+         _ADD_SURFACE_FLUX_(self%id_an2o,       -n2oflux) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
+         _ADD_SURFACE_FLUX_(self%id_gasnit,     -niflux)  ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
          _ADD_SURFACE_FLUX_(self%id_ano3,       ndep)    ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
          _ADD_SURFACE_FLUX_(self%id_alkali,     -ndep)   ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
          _SET_SURFACE_DIAGNOSTIC_(self%id_ndep, ndep)

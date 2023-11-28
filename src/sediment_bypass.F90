@@ -11,6 +11,7 @@ module ihamocc_sediment_bypass
 
    type, extends(type_base_model), public :: type_ihamocc_sediment_bypass
       type (type_bottom_diagnostic_variable_id), allocatable :: id_pool(:)
+      type (type_diagnostic_variable_id), allocatable ::  id_flux_out(:)
       type (type_bottom_dependency_id), allocatable          :: id_flux(:)
       type (type_state_variable_id), allocatable             :: id_tracer(:)
       type (type_bottom_dependency_id)                       :: id_bdepth
@@ -36,13 +37,15 @@ contains
       allocate(self%id_flux(self%ntracers))
       allocate(self%id_pool(self%ntracers))
       allocate(self%id_tracer(self%ntracers))
+      allocate(self%id_flux_out(self%ntracers))
       do i=1, self%ntracers
           write(index,'(i0)') i
           call self%register_dependency(self%id_flux(i),  'flux'//trim(index),   'kmol/m-2 s-1',  'bottom flux '//trim(index))
       
           ! Register diagnostics (fake state vars to receive sinking material)
           call self%register_diagnostic_variable(self%id_pool(i), 'pool'//trim(index),'kmol/m^2', 'target bottom pool for pelagic tracer '//trim(index),source=source_constant, output=output_none, act_as_state_variable=.true.)
-
+          call self%register_diagnostic_variable(self%id_flux_out(i), 'pool'//trim(index)//'flux','kmol/m^2', 'flux to target bottom pool for pelagic tracer '//trim(index),source=source_do, output=output_instantaneous)
+          
           ! couple to access the incoming flux
           call self%request_coupling(self%id_flux(i),'./pool'//trim(index)//'_sms_tot')
       
@@ -65,6 +68,7 @@ contains
          end do
          source = flux/bdepth ! calculate water column tracer concentration increase
          do i=1,self%ntracers
+            _SET_DIAGNOSTIC_(self%id_flux_out(i), flux(i))
             _ADD_SOURCE_(self%id_tracer(i),source(i)) ! add tracer to final recipient
          end do
       _LOOP_END_

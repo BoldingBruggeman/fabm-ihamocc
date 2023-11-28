@@ -175,11 +175,6 @@ contains
          ! Carbon chemistry: Calculate equilibrium constants and solve for [H+] and
          ! carbonate alkalinity (ac)
          t    = min(40._rk,max(-3._rk,ptho))
-         t2   = t**2
-         t3   = t**3
-         t4   = t**4
-         tk   = t + tzero
-         tk100= tk/100.0_rk
          s    = min(40._rk,max( 25._rk,psao))
          rrho = prho/1000.0_rk                ! seawater density [kg/m3]->[g/cm3]
          prb  = prb/10._rk  !convert from dbar to bar. ORIGINAL: ptiestu(i,j,k)*98060*1.027e-6_rk ! pressure in unit bars, 98060 = one
@@ -197,6 +192,12 @@ contains
          CALL CARCHM_SOLVE(s,tc,ta,sit,pt,K1,K2,Kb,Kw,Ks1,Kf,Ksi,K1p,K2p,K3p, &
                            ah1,ac,niter)
    
+         if(ah1 .gt. 0._rk) then
+            _SET_DIAGNOSTIC_(self%id_hi, max(1.e-20_rk,ah1))
+         else
+            _SET_DIAGNOSTIC_(self%id_hi, hi)
+         endif
+         
          ! Determine CO2*, HCO3- and CO3-- concentrations (in mol/kg soln)
          cu = ( 2._rk * tc - ac ) / ( 2._rk + K1 / ah1 )
          cb = K1 * cu / ah1
@@ -215,11 +216,6 @@ contains
          undsa=MAX(0._rk,-supsat)
          dissol=MIN(undsa,0.05_rk*calc)
 
-         if(ah1.gt.0.) then
-            _SET_DIAGNOSTIC_(self%id_hi, max(1.e-20_rk,ah1))
-         else
-            _SET_DIAGNOSTIC_(self%id_hi, hi)
-         endif
          _SET_DIAGNOSTIC_(self%id_co2star, co2star)
          _SET_DIAGNOSTIC_(self%id_co3, co3)
          _SET_DIAGNOSTIC_(self%id_omegaA, OmegaA)

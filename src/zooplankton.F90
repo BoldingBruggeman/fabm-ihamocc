@@ -10,8 +10,7 @@ module ihamocc_zooplankton
    private
 
    type, extends(type_base_model), public :: type_ihamocc_zooplankton
-      type (type_dependency_id) :: id_ptho, id_phytomi, id_phosy
-      type (type_surface_dependency_id) :: id_
+      type (type_dependency_id) :: id_ptho, id_phytomi, id_phosy, id_depth
       type (type_state_variable_id) :: id_zoo, id_phy, id_silica, id_sco212, id_phosph, id_det, id_doc
       type (type_diagnostic_variable_id) :: id_gratpoc, id_pommor, id_dimmor, id_graton, id_grawa, id_domex
       real(rk) :: grami, grazra, bkzoo, epsher, zinges, spemor, gammaz, ecan
@@ -41,6 +40,7 @@ contains
       call self%add_to_aggregate_variable(standard_variables%total_phosphorus, self%id_zoo, scale_factor=1e6_rk)
       call self%add_to_aggregate_variable(standard_variables%total_iron,       self%id_zoo, scale_factor=riron * 1e9_rk)
 
+      call self%register_dependency(self%id_depth,        standard_variables%depth)
       call self%register_dependency(self%id_ptho,      standard_variables%temperature)
       call self%register_dependency(self%id_phytomi,   'phytomi', 'kmol P/m3', 'minimum concentration of phytoplankton')
       call self%register_dependency(self%id_phosy,     'phosy',   'kmol/m3/d', 'photosynthetic rate')
@@ -60,19 +60,26 @@ contains
       class (type_ihamocc_zooplankton), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
       
-      real(rk) :: ptho, avphy, phytomi, avgra, grazing, graton, gratpoc, grawa, zoothresh, zoomor, excdoc, pommor, dimmor, domex
+      real(rk) :: ptho, avphy, phytomi, avgra, grazing, graton, gratpoc, grawa, zoothresh, zoomor, excdoc, pommor, dimmor, domex, depth
       
       _LOOP_BEGIN_
          _GET_(self%id_ptho, ptho)
          _GET_(self%id_phy, avphy)
          _GET_(self%id_phytomi, phytomi)
          _GET_(self%id_zoo, avgra)
+         _GET_(self%id_depth, depth)
          
-         grazing = MAX(0.0_rk,avgra*self%grazra*(avphy-phytomi)/(avphy+self%bkzoo)) ! NIC: Changed from BLOM-iHAMOCC, now identical to formulation in Six and Maier-Reimer (1996)
-         graton = self%epsher*(1._rk-self%zinges)*grazing
-         gratpoc = (1._rk-self%epsher)*grazing
-         grawa = self%epsher*self%zinges*grazing
-         
+         if (depth<=100_rk) then
+             grazing = MAX(0.0_rk,avgra*self%grazra*(avphy-phytomi)/(avphy+self%bkzoo)) ! NIC: Changed from BLOM-iHAMOCC, now identical to formulation in Six and Maier-Reimer (1996)
+             graton = self%epsher*(1._rk-self%zinges)*grazing
+             gratpoc = (1._rk-self%epsher)*grazing
+             grawa = self%epsher*self%zinges*grazing
+         else
+             grazing = 0.0_rk
+             graton = 0.0_rk
+             gratpoc = 0.0_rk
+             grawa = 0.0_rk
+         endif
          zoothresh = MAX(0._rk,avgra-2._rk*self%grami)
          zoomor = self%spemor*zoothresh*zoothresh           ! *10 compared to linear in tropics (tinka)
          excdoc = self%gammaz*zoothresh                     ! excretion of doc by zooplankton
@@ -82,6 +89,7 @@ contains
          
          _ADD_SOURCE_(self%id_zoo, (grawa-excdoc-zoomor)/dtbgc)
          _ADD_SOURCE_(self%id_doc, excdoc/dtbgc)
+         _ADD_SOURCE_(self%id_phy, -grazing/dtbgc)
          
          _SET_DIAGNOSTIC_(self%id_pommor,  pommor)
          _SET_DIAGNOSTIC_(self%id_gratpoc, gratpoc)

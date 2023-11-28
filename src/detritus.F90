@@ -18,6 +18,7 @@ module ihamocc_detritus
       type (type_diagnostic_variable_id) :: id_wopal, id_wcal, id_wpoc, id_wdust, id_bkopal, id_rem, id_remin2o, id_delcar, id_rdnit1, id_remin, id_dustagg
       type (type_diagnostic_variable_id) :: id_wnos, id_aggregate, id_pocrem, id_docrem, id_delcar_part, id_delsil
       type (type_bottom_state_variable_id) :: id_det_bot, id_calc_bot, id_opal_bot, id_fdust_bot, id_alkali_bot
+      type (type_bottom_diagnostic_variable_id) :: id_flux_opal
       logical  :: AGG, WLIN
       real(rk) :: remido, bkopal, ropal, rcalc, calmax, drempoc, dremopal, dremn2o, dremsul, relaxfe, nmldmin
       real(rk) :: claydens, safe, SinkExp, cellsink, alow1, alar1, Stick, wmin, wmax, wline, wpoc, wcal, wopal, FractDim, cellmass, shear
@@ -105,6 +106,8 @@ contains
       call self%register_diagnostic_variable(self%id_delsil,      'delsil',      'kmol P m^-3 d^-1', 'delsil') !for natdic.f90
       call self%register_diagnostic_variable(self%id_rdnit1,      'rdnit1',      '-',                'rdnit1') !for natdic.f90
 
+      call self%register_diagnostic_variable(self%id_flux_opal,      'flux_opal',      'kmol Si m^-2 d^-1',                'bottom flux opal', source=source_do_bottom, output=output_instantaneous)
+      
       call self%register_state_dependency(self%id_doc,        'doc',        'kmol P m^-3', 'dissolvecd organic carbon')
       call self%register_state_dependency(self%id_silica,     'silica',     'kmol Si m^-3', 'Silicid acid (Si(OH)4)')
       call self%register_state_dependency(self%id_phosph,     'phosph',     'kmol P m^-3', 'phosphate')
@@ -174,6 +177,7 @@ contains
          _GET_(self%id_silica, silica)
          _GET_(self%id_opal, opal)
          _GET_(self%id_gratpoc, gratpoc)
+         _GET_(self%id_graton, graton)
          _GET_(self%id_iron, iron)
          _GET_(self%id_satoxy, satoxy)
          _GET_(self%id_ano3, ano3)
@@ -202,9 +206,7 @@ contains
          delcar_part = 0.0_rk
          delcar = 0.0_rk
          delsil = 0.0_rk
-         if (depth<=100_rk) then ! in photic zone
-             _GET_(self%id_graton, graton)
-             
+         if (depth<=100_rk) then ! in photic zone             
              bacfra = self%remido*doc
              export = pommor + gratpoc + phymor
              avsil = max(0.0_rk,silica)
@@ -280,14 +282,13 @@ contains
                      avnos = nos
                      nos_roc = -remin*avnos/avmass
                  endif
-                 sterzo = pommor + dimmor
                  zmornos = sterzo * zdis * 1.e+6_rk
                  nos_roc = nos_roc + zmornos
              endif
 
              gasnit_roc = gasnit_roc - remin*1.e-4_rk*ro2ut*refra
              an2o_roc   = an2o_roc   + remin*1.e-4_rk*ro2ut*refra
-             det_roc    = det_roc    - pocrem + phymor + sterzo
+             det_roc    = det_roc    - pocrem + phymor + sterzo + gratpoc
              doc_roc    = doc_roc    - docrem
              phosph_roc = phosph_roc + remin
              ano3_roc   = ano3_roc   + remin*rnit
@@ -511,6 +512,7 @@ contains
          _ADD_BOTTOM_SOURCE_(self%id_opal_bot, wopal*opal/dtbgc)
          _ADD_BOTTOM_SOURCE_(self%id_det_bot,  det_bot_roc/dtbgc)
          _ADD_BOTTOM_SOURCE_(self%id_fdust_bot,fdust_bot_roc/dtbgc)
+         _SET_BOTTOM_DIAGNOSTIC_(self%id_flux_opal, wopal*opal/dtbgc)
       _BOTTOM_LOOP_END_
    end subroutine do_bottom
     

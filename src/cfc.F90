@@ -99,8 +99,8 @@ contains
          flxsf = kw_sf*(a_sf*atm_sf6*ppao*9.86923_rk*1.e-6_rk-sf6) ! Surface flux of sf6
          
          _ADD_SURFACE_FLUX_(self%id_cfc11, flx11) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
-         _ADD_SURFACE_FLUX_(self%id_cfc11, flx12) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
-         _ADD_SURFACE_FLUX_(self%id_cfc11, flxsf) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
+         _ADD_SURFACE_FLUX_(self%id_cfc12, flx12) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
+         _ADD_SURFACE_FLUX_(self%id_sf6, flxsf) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
          _SET_SURFACE_DIAGNOSTIC_(self%id_atmf11, flx11)
          _SET_SURFACE_DIAGNOSTIC_(self%id_atmf12, flx12)
          _SET_SURFACE_DIAGNOSTIC_(self%id_atmsf6, flxsf)

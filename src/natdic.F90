@@ -33,6 +33,20 @@ contains
       
       call self%get_parameter(self%atco2_nat, 'atco2_nat', 'ppm','CMIP6 pre-industrial reference CO2 atm concentration', default=284.32_rk)
       
+      ! Register state variables
+      call self%register_state_variable(self%id_natcalc,   'natcalc',   'kmol/m^3', 'Natural Calcium carbonate', minimum=0.0_rk)
+      call self%register_state_variable(self%id_natsco212, 'natsco212', 'kmol/m^3', 'Dissolved natural co2', minimum=0.0_rk)
+      call self%register_state_variable(self%id_natalkali, 'natalkali', 'kmol/m^3', 'Natural alkalinity', minimum=0.0_rk)
+      
+      ! Register diagnostic variables
+      call self%register_diagnostic_variable(self%id_nathi,     'nathi',     'mol/kg',    'Natural Hydrogen ion concentration', missing_value=1.e-20_rk)
+      call self%register_diagnostic_variable(self%id_natco3,    'natco3',    'kmol/m3',   'Natural Dissolved carbonate (CO3)')
+      call self%register_diagnostic_variable(self%id_natco2fxd, 'natco2fxd', 'kmol/m2/s', 'Natural Downwards co2 surface flux')
+      call self%register_diagnostic_variable(self%id_natco2fxu, 'natco2fxu', 'kmol/m2/s', 'Natural Downwards co2 surface flux')
+      call self%register_diagnostic_variable(self%id_natpco2d,  'natpco2d',  'microatm',  'Natural Dry air co2 pressure')
+      call self%register_diagnostic_variable(self%id_natomegaA, 'natomegaA', '-',         'natomegaA')
+      call self%register_diagnostic_variable(self%id_natomegaC, 'natomegaC', '-',         'natomegaC')
+
       call self%register_dependency(self%id_psao,      standard_variables%practical_salinity)
       call self%register_dependency(self%id_ptho,      standard_variables%temperature)
       call self%register_dependency(self%id_prho,      standard_variables%density)
@@ -42,7 +56,7 @@ contains
       call self%register_dependency(self%id_psicomo,   standard_variables%ice_area_fraction)
       call self%register_dependency(self%id_ppao,      standard_variables%surface_air_pressure) ! surface air pressure in pascal
       call self%register_dependency(self%id_depth,     standard_variables%depth)
-      call self%register_dependency(self%id_nathi_in,  'nathi',     'mol/kg',       'Hydrogen ion concentration')
+      call self%register_dependency(self%id_nathi_in,  'nathi',     'mol/kg',       'Natural Hydrogen ion concentration')
       call self%register_dependency(self%id_remin2o,   'remin2o',   'kmol/m^3 d-1', 'remin2o')
       call self%register_dependency(self%id_remin,     'remin',     'kmol/m^3 d-1', 'remin')
       call self%register_dependency(self%id_phyrem,    'phyrem',    'kmol/m3/d',    'photosynthetic remineralization rate')
@@ -56,25 +70,11 @@ contains
       call self%register_dependency(self%id_dano3,     'dano3',     'kmol/m^3 d-1', 'dano3') 
       call self%register_dependency(self%id_wcal,      'wcal',      'm d-1',        'calcium carbonate sinking speed')
       
-      ! Register state variables
-      call self%register_state_variable(self%id_natcalc,   'natcalc',   'kmol/m^3', 'Natural Calcium carbonate', minimum=0.0_rk)
-      call self%register_state_variable(self%id_natsco212, 'natsco212', 'kmol/m^3', 'Dissolved natural co2', minimum=0.0_rk)
-      call self%register_state_variable(self%id_natalkali, 'natalkali', 'kmol/m^3', 'Natural alkalinity', minimum=0.0_rk)
-
       ! Register environmental dependencies
       call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
       call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved hosphate')
       call self%register_state_dependency(self%id_oxygen, 'oxygen', 'kmol/m3',  'Dissolved oxygen')
       call self%register_state_dependency(self%id_ano3,   'ano3',   'kmol/m^3', 'Dissolved nitrate')
-
-      ! Register diagnostic variables
-      call self%register_diagnostic_variable(self%id_nathi,     'nathi',     'mol/kg',    'Natural Hydrogen ion concentration', missing_value=1.e-20_rk)
-      call self%register_diagnostic_variable(self%id_natco3,    'natco3',    'kmol/m3',   'Natural Dissolved carbonate (CO3)')
-      call self%register_diagnostic_variable(self%id_natco2fxd, 'natco2fxd', 'kmol/m2/s', 'Natural Downwards co2 surface flux')
-      call self%register_diagnostic_variable(self%id_natco2fxu, 'natco2fxu', 'kmol/m2/s', 'Natural Downwards co2 surface flux')
-      call self%register_diagnostic_variable(self%id_natpco2d,  'natpco2d',  'microatm',  'Natural Dry air co2 pressure')
-      call self%register_diagnostic_variable(self%id_natomegaA, 'natomegaA', '-',         'natomegaA')
-      call self%register_diagnostic_variable(self%id_natomegaC, 'natomegaC', '-',         'natomegaC')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)
@@ -118,6 +118,7 @@ contains
          sit  = silica / rrho
          pt   = phosph / rrho
          ah1  = nathi
+         niter = 20
    
          CALL CARCHM_KEQUI(t,s,prb,Kh,Khd,K1,K2,Kb,Kw,Ks1,Kf,Ksi,             &
                            K1p,K2p,K3p,Kspc,Kspa)
@@ -127,11 +128,6 @@ contains
             
          ! Determine natural CO2*, HCO3- and CO3-- concentrations (in mol/kg soln)
          natcu = ( 2._rk * tc - ac ) / ( 2._rk + K1 / ah1 )
-         natcb = K1 * natcu / ah1
-         natcc = K2 * natcb / ah1
-         
-         ! Natural carbonate ion concentration, convert from mol/kg to kmol/m^3 
-         natco3 = natcc * rrho                                                    !!!!!!!! NIC: Move to do loop?
       
          natpco2 = natcu * 1.e6_rk / Kh ! Determine CO2 pressure and fugacity (in micoatm)   NOTE: equation below for pCO2 needs requires CO2 in mol/kg
 
@@ -181,20 +177,16 @@ contains
          ! Carbon chemistry: Calculate equilibrium constants and solve for [H+] and
          ! carbonate alkalinity (ac)
          t    = min(40._rk,max(-3._rk,ptho))
-         !t2   = t**2
-         !t3   = t**3
-         !t4   = t**4
-         !tk   = t + tzero
-         !tk100= tk/100.0_rk
          s    = min(40._rk,max( 25._rk,psao))
          rrho = prho/1000.0_rk                ! seawater density [kg/m3]->[g/cm3]
-         prb  = prb*10._rk  !convert from dbar to bar. ORIGINAL: ptiestu(i,j,k)*98060*1.027e-6_rk ! pressure in unit bars, 98060 = onem
+         prb  = prb/10._rk  !convert from dbar to bar. ORIGINAL: ptiestu(i,j,k)*98060*1.027e-6_rk ! pressure in unit bars, 98060 = onem
          !
          tc   = natsco212 / rrho  ! convert to mol/kg
          ta   = natalkali / rrho
          sit  = silica / rrho
          pt   = phosph / rrho
          ah1  = nathi
+         niter = 20
    
          CALL CARCHM_KEQUI(t,s,prb,Kh,Khd,K1,K2,Kb,Kw,Ks1,Kf,Ksi,             &
                            K1p,K2p,K3p,Kspc,Kspa)
@@ -202,6 +194,12 @@ contains
          CALL CARCHM_SOLVE(s,tc,ta,sit,pt,K1,K2,Kb,Kw,Ks1,Kf,Ksi,K1p,K2p,K3p, &
                            ah1,ac,niter)
    
+         if(ah1.gt.0._rk) then
+            _SET_DIAGNOSTIC_(self%id_nathi, max(1.e-20_rk,ah1))
+         else
+            _SET_DIAGNOSTIC_(self%id_nathi, nathi)
+         endif
+
          ! Determine CO2*, HCO3- and CO3-- concentrations (in mol/kg soln)
          natcu = ( 2._rk * tc - ac ) / ( 2._rk + K1 / ah1 )
          natcb = K1 * natcu / ah1
@@ -209,7 +207,7 @@ contains
          !co2star=cu
    
          ! Carbonate ion concentration, convert from mol/kg to kmol/m^3 
-         natco3  = cc * rrho 
+         natco3  = natcc * rrho 
    
          ! Deep ocean processes
          natomega = ( calcon * s / 35._rk ) * natcc           ! Determine Omega Calcite/Aragonite and dissolution of caco3 based on OmegaC:
@@ -219,13 +217,9 @@ contains
          natundsa=MAX(0._rk,-natsupsat)
          natdissol=MIN(natundsa,0.05_rk*natcalc)
 
-         if(ah1.gt.0._rk) then
-            _SET_DIAGNOSTIC_(self%id_nathi, max(1.e-20_rk,ah1))
-         else
-            _SET_DIAGNOSTIC_(self%id_nathi, nathi)
-         endif
          _SET_DIAGNOSTIC_(self%id_natomegaA, natOmegaA)
          _SET_DIAGNOSTIC_(self%id_natomegaC, natOmegaC)
+         _SET_DIAGNOSTIC_(self%id_natco3, natco3*rrho)
          
          natcalc_roc   = - natdissol
          natalkali_roc = 2._rk*natdissol

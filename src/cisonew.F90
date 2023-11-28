@@ -18,7 +18,7 @@ module ihamocc_cisonew
       type (type_state_variable_id) :: id_phy14, id_zoo13, id_zoo14, id_det, id_zoo 
       type (type_surface_diagnostic_variable_id) :: id_co213fxd, id_co213fxu, id_co214fxd, id_co214fxu
       type (type_bottom_state_variable_id) :: id_det13_bot, id_det14_bot, id_sco213_bot, id_sco214_bot
-      real(rk) :: c14_t_half, re1312, re14to, prei13, prei14
+      real(rk) :: re1312, re14to, prei13, prei14
    contains                   
       procedure :: initialize 
       procedure :: do_surface 

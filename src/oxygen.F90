@@ -52,7 +52,7 @@ contains
       class (type_ihamocc_oxygen), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_SURFACE_
 
-      real(rk) :: oxy, t, t2, t3, t4, tk, tk100, s, psao, ptho, oxflux, sco2, satoxy, ato2, rpp0, ppao, oxygen, psicomo
+      real(rk) :: oxy, t, t2, t3, t4, tk, tk100, s, psao, ptho, oxflux, sco2, satoxy, rpp0, ppao, oxygen, psicomo
       real(rk) :: pfu10, kwo2
             
       _SURFACE_LOOP_BEGIN_
@@ -80,8 +80,8 @@ contains
          rpp0 = ppao/atm2pa
          
          ! Surface flux of oxygen
-		 oxflux=kwo2*dtbgc*(oxygen-satoxy*(ato2/196800._rk)*rpp0) ! originally multiplied by dtbgc (ts in s) to get absolute change. Removed as FABM rates-of-change has units s-1
-         _SET_SURFACE_DIAGNOSTIC_(self%id_oxflux, oxflux/dtbgc)
+		 oxflux=kwo2*(oxygen-satoxy*(ato2/196800._rk)*rpp0) ! originally multiplied by dtbgc (ts in s) to get absolute change. Removed as FABM rates-of-change has units s-1
+         _SET_SURFACE_DIAGNOSTIC_(self%id_oxflux, oxflux)
          _ADD_SURFACE_FLUX_(self%id_oxygen, -oxflux) ! NIC: positive flux indicates air -> water exchange; negative indicates water -> air exchange
       _SURFACE_LOOP_END_
    end subroutine do_surface  

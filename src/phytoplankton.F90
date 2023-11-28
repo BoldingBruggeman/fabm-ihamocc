@@ -11,7 +11,7 @@ module ihamocc_phytoplankton
 
    type, extends(type_base_model), public :: type_ihamocc_phytoplankton
       type (type_dependency_id) :: id_ptho, id_light, id_depth
-      type (type_state_variable_id) :: id_phy, id_silica, id_sco212, id_phosph, id_det, id_oxygen, id_doc, id_ano3, id_iron
+      type (type_state_variable_id) :: id_phy, id_sco212, id_phosph, id_det, id_oxygen, id_doc, id_ano3, id_iron
       type (type_diagnostic_variable_id) :: id_phosy, id_exud, id_phymor, id_phytomi, id_phyrem
       real(rk) :: pi_alpha, phytomi, bkphy, dyphy, gammap, ropal, rcalc
    contains
@@ -30,8 +30,6 @@ contains
       call self%get_parameter(self%bkphy,    'bkphy',    'kmol P/m3', 'phytoplankton half sat. constant',                          default=4.e-8_rk) !i.e. 0.04 mmol P/m3
       call self%get_parameter(self%dyphy,    'dyphy',    '1/d',       'phytoplankton mortality',                                   default=0.004_rk) ! default value 0.02*0.4dyphy=0.004
       call self%get_parameter(self%gammap,   'gammap',   '1/d',       'phytoplankton exudation rate',                              default=0.04_rk)
-      call self%get_parameter(self%ropal,    'ropal',    '-',         'opal to organic phosphorous production ratio',              default=30._rk)
-      call self%get_parameter(self%rcalc,    'rcalc',    '-',         'calcium carbonate to organic phosphorous production ratio', default=40._rk)
 
       call self%register_state_variable(self%id_phy, 'phy', 'kmol P m^-3', 'phytoplankton', initial_value=3e-9_rk, minimum=self%phytomi)
       call self%add_to_aggregate_variable(standard_variables%total_carbon,     self%id_phy, scale_factor=rcar * 1e6_rk)
@@ -39,7 +37,6 @@ contains
       call self%add_to_aggregate_variable(standard_variables%total_phosphorus, self%id_phy, scale_factor=1e6_rk)
       call self%add_to_aggregate_variable(standard_variables%total_iron,       self%id_phy, scale_factor=riron * 1e9_rk)
 
-      call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
       call self%register_state_dependency(self%id_sco212, 'sco212', 'kmol/m^3', 'Dissolved co2')
       call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved phosphate')
       call self%register_state_dependency(self%id_ano3,   'ano3',   'kmol/m^3', 'Dissolved nitrate')
@@ -63,14 +60,13 @@ contains
       class (type_ihamocc_phytoplankton), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
 
-      real(rk) :: atten_phyt, ptho, light, avphy, avsil, avdic, phosph, ano3, iron, depth, oxygen, temp, temfa, phythresh, exud, phosy, sterph
+      real(rk) :: atten_phyt, ptho, light, avphy, avdic, phosph, ano3, iron, depth, oxygen, temp, temfa, phythresh, exud, phosy, sterph
       real(rk) :: phymor, phyrem, phofa, pho, avanut, avanfe, xa, xn
       
       _LOOP_BEGIN_
          _GET_(self%id_ptho, ptho)
          _GET_(self%id_light, light)  
          _GET_(self%id_phy, avphy)
-         _GET_(self%id_silica, avsil)
          _GET_(self%id_sco212, avdic)
          _GET_(self%id_phosph, phosph)
          _GET_(self%id_ano3, ano3)
