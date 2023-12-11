@@ -16,7 +16,7 @@ module ihamocc_detritus
       type (type_state_variable_id) :: id_phy, id_silica, id_nos, id_oxygen, id_sco212, id_phosph, id_ano3, id_alkali, id_calc, id_opal, id_iron, id_an2o
       type (type_state_variable_id) :: id_fdust, id_adust, id_det, id_doc, id_gasnit
       type (type_diagnostic_variable_id) :: id_wopal, id_wcal, id_wpoc, id_wdust, id_bkopal, id_rem, id_remin2o, id_delcar, id_rdnit1, id_remin, id_dustagg
-      type (type_diagnostic_variable_id) :: id_wnos, id_aggregate, id_pocrem, id_docrem, id_delcar_part, id_delsil
+      type (type_diagnostic_variable_id) :: id_wnos, id_aggregate, id_pocrem, id_docrem, id_delcar_part, id_delsil, id_dnit
       type (type_bottom_state_variable_id) :: id_det_bot, id_calc_bot, id_opal_bot, id_fdust_bot, id_alkali_bot
       type (type_bottom_diagnostic_variable_id) :: id_flux_opal
       logical  :: AGG, WLIN
@@ -30,6 +30,7 @@ module ihamocc_detritus
       procedure :: check_state
    end type type_ihamocc_detritus
    
+      real(rk), parameter :: rdnit0 = 0.8*ro2ut ! moles nitrate lost for remineralisation of 1 mole P. Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.
       real(rk), parameter :: rdnit1 = 0.8_rk*ro2ut-rnit !Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.
       real(rk), parameter :: rdnit2 = 0.4_rk*ro2ut !Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.      
       real(rk), parameter :: rdn2o1 = 2._rk*ro2ut-2.5*rnit !Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.      
@@ -41,21 +42,21 @@ contains
       class (type_ihamocc_detritus), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
     
-      call self%get_parameter(self%remido,  'remido',   '1 d^-1',       'DOM remineralization rate',                                 default=0.004_rk)
-      call self%get_parameter(self%drempoc, 'drempoc',  '1 d^-1',       'deep sea poc remineralisation rate',                        default=0.025_rk)
-      call self%get_parameter(self%dremopal,'dremopal', '1 d^-1',       'deep sea opal remineralisation rate',                       default=0.003_rk)
-      call self%get_parameter(self%dremn2o, 'dremn2o',  '1 d^-1',       'deep sea n2o remineralisation rate',                        default=0.01_rk)
-      call self%get_parameter(self%dremsul, 'dremsul',  '1 d^-1',       'deep sea sulphate remineralisation rate',                   default=0.005_rk)
-      call self%get_parameter(self%bkopal,  'bkopal',   'kmol Si m^-3','half sat. constant for opal',                               default=5.e-6_rk) !i.e. 0.04 mmol P/m3
-      call self%get_parameter(self%ropal,   'ropal',    '-',         'opal to organic phosphorous production ratio',              default=10.5_rk)
-      call self%get_parameter(self%rcalc,   'rcalc',    '-',         'calcium carbonate to organic phosphorous production ratio', default=14._rk)
-      call self%get_parameter(self%claydens,'claydens', 'kg m^-3',    'clay (quartz) density',                                     default=2600._rk)
-      call self%get_parameter(self%relaxfe, 'relaxfe',  '-',         'relaxfe',                                                   default=1.3699e-4_rk)
-      call self%get_parameter(self%wpoc,    'wpoc',     'm d^-1',     'poc sinking speed',                                         default=5._rk)
-      call self%get_parameter(self%wcal,    'wcal',     'm d^-1',     'calcium carbonate sinking speed',                           default=30._rk)
-      call self%get_parameter(self%wopal,   'wopal',    'm d^-1',     'opal sinking speed',                                        default=30._rk)
+      call self%get_parameter(self%remido,  'remido',   'd-1',         'DOM remineralization rate',                                 default=0.004_rk)
+      call self%get_parameter(self%drempoc, 'drempoc',  'd-1',         'deep sea poc remineralisation rate',                        default=0.025_rk)
+      call self%get_parameter(self%dremopal,'dremopal', 'd-1',         'deep sea opal remineralisation rate',                       default=0.003_rk)
+      call self%get_parameter(self%dremn2o, 'dremn2o',  'd-1',         'deep sea n2o remineralisation rate',                        default=0.01_rk)
+      call self%get_parameter(self%dremsul, 'dremsul',  'd-1',         'deep sea sulphate remineralisation rate',                   default=0.005_rk)
+      call self%get_parameter(self%bkopal,  'bkopal',   'kmol Si m-3', 'half sat. constant for opal',                               default=5.e-6_rk) !i.e. 0.04 mmol P/m3
+      call self%get_parameter(self%ropal,   'ropal',    '-',           'opal to organic phosphorous production ratio',              default=10.5_rk)
+      call self%get_parameter(self%rcalc,   'rcalc',    '-',           'calcium carbonate to organic phosphorous production ratio', default=14._rk)
+      call self%get_parameter(self%claydens,'claydens', 'kg m-3',      'clay (quartz) density',                                     default=2600._rk)
+      call self%get_parameter(self%relaxfe, 'relaxfe',  '-',           'relaxfe',                                                   default=1.3699e-4_rk)
+      call self%get_parameter(self%wpoc,    'wpoc',     'm d-1',       'poc sinking speed',                                         default=5._rk)
+      call self%get_parameter(self%wcal,    'wcal',     'm d-1',       'calcium carbonate sinking speed',                           default=30._rk)
+      call self%get_parameter(self%wopal,   'wopal',    'm d-1',       'opal sinking speed',                                        default=30._rk)
       
-      call self%get_parameter(self%AGG,     'AGG',      '-',         'turn on aggregations',                                      default=.FALSE.)
+      call self%get_parameter(self%AGG,     'AGG',      '-',            'turn on aggregations',                                      default=.FALSE.)
       if (self%AGG) then
         call self%get_parameter(self%calmax,   'calmax',   '-',     'calmax',                                                                  default=0.2_rk)
         call self%get_parameter(self%FractDim, 'FractDim', '-',     'FractDim',                                                                default=1.62_rk)
@@ -67,87 +68,88 @@ contains
         call self%get_parameter(self%alow1,    'alow1',    'cm',    'diameter of smallest particle',                                           default=0.002_rk)
         call self%get_parameter(self%alar1,    'alar1',    'cm',    'diameter of largest particle for size dependent aggregation and sinking', default=0.5_rk)
         call self%get_parameter(self%Stick,    'Stick',    '-',     'Stick',                                                                   default=0.15_rk)
-        call self%get_parameter(self%shear,    'shear',    'd^-1',   'shear in the mixed layer',                                                default=43200._rk)
+        call self%get_parameter(self%shear,    'shear',    'd-1',   'shear in the mixed layer',                                                default=43200._rk)
         
-        call self%register_state_variable(self%id_nos,   'nos',   'g^-1', 'marine snow aggregates per g sea water', minimum=0.0_rk)
-        call self%register_state_variable(self%id_adust, 'adust', 'g^-1', 'dust aggregates per g sea water', minimum=0.0_rk)
+        call self%register_state_variable(self%id_nos,   'nos',   'g-1', 'marine snow aggregates per g sea water', minimum=0.0_rk)
+        call self%register_state_variable(self%id_adust, 'adust', 'g-1', 'dust aggregates per g sea water', minimum=0.0_rk)
         
-        call self%register_diagnostic_variable(self%id_aggregate, 'aggregate', 'g^-1 d^-1',    'marine snow aggregation')
-        call self%register_diagnostic_variable(self%id_dustagg,   'dustagg',   'kg m^-3 d^-1', 'dust particle aggregation')
-        call self%register_diagnostic_variable(self%id_wnos,      'wnos',      'm d^-1',      'sinking speed of particles')
+        call self%register_diagnostic_variable(self%id_aggregate, 'aggregate', 'g-1 d-1',    'marine snow aggregation')
+        call self%register_diagnostic_variable(self%id_dustagg,   'dustagg',   'kg m-3 d-1', 'dust particle aggregation')
+        call self%register_diagnostic_variable(self%id_wnos,      'wnos',      'm d-1',      'sinking speed of particles')
 
-        call self%register_dependency(self%id_wnos_in, 'wnos', 'm d^-1', 'sinking speed of particles')
+        call self%register_dependency(self%id_wnos_in, 'wnos', 'm d-1', 'sinking speed of particles')
       endif
    
       call self%get_parameter(self%WLIN, 'WLIN', '-','second sinking scheme', default=.FALSE.)
       if (self%WLIN .and. .not. self%AGG) then
-        call self%get_parameter(self%wmin,  'wmin',  'm d^-1', 'minimum sinking speed',                default=1._rk)
-        call self%get_parameter(self%wmax,  'wmax',  'm d^-1', 'maximum sinking speed',                default=60._rk)
-        call self%get_parameter(self%wline, 'wline', 'm d^-1', 'constant describing incr. with depth', default=0.025_rk)
+        call self%get_parameter(self%wmin,  'wmin',  'm d-1', 'minimum sinking speed',                default=1._rk)
+        call self%get_parameter(self%wmax,  'wmax',  'm d-1', 'maximum sinking speed',                default=60._rk)
+        call self%get_parameter(self%wline, 'wline', 'm d-1', 'constant describing incr. with depth', default=0.025_rk)
       endif
     
-      call self%register_state_variable(self%id_det,    'det',    'kmol P m^-3', 'detritus', minimum=0.0_rk)
+      call self%register_state_variable(self%id_det,    'det',    'kmol P m-3', 'detritus', minimum=0.0_rk)
       call self%add_to_aggregate_variable(standard_variables%total_carbon,     self%id_det, scale_factor=rcar * 1e6_rk)
       call self%add_to_aggregate_variable(standard_variables%total_nitrogen,   self%id_det, scale_factor=rnit * 1e6_rk)
       call self%add_to_aggregate_variable(standard_variables%total_phosphorus, self%id_det, scale_factor=1e6_rk)
       call self%add_to_aggregate_variable(standard_variables%total_iron,       self%id_det, scale_factor=riron * 1e9_rk)
       
-      call self%register_diagnostic_variable(self%id_wpoc,        'wpoc',        'm d^-1',           'poc sinking speed', missing_value=0.0_rk, source=source_do)
-      call self%register_diagnostic_variable(self%id_wcal,        'wcal',        'm d^-1',           'calcium carbonate sinking speed')
-      call self%register_diagnostic_variable(self%id_wopal,       'wopal',       'm d^-1',           'opal sinking speed')
-      call self%register_diagnostic_variable(self%id_wdust,       'wdust',       'm d^-1',           'dust sinking speed')
-      call self%register_diagnostic_variable(self%id_bkopal,      'bkopal',      'kmol Si m^-3',     'half sat. constant for opal') !for bromo.f90
-      call self%register_diagnostic_variable(self%id_pocrem,      'pocrem',      'kmol P m^-3 d^-1', 'deep remineralization of POC') !for cisonew.f90 & natdic.f90
-      call self%register_diagnostic_variable(self%id_docrem,      'docrem',      'kmol P m^-3 d^-1', 'deep remineralization of DOC') !for cisonew.f90 & natdic.f90
-      call self%register_diagnostic_variable(self%id_remin2o,     'remin2o',     'kmol P m^-3 d^-1', 'remin2o') !for cisonew.f90 & natdic.f90
-      call self%register_diagnostic_variable(self%id_remin,       'remin',       'kmol P m^-3 d^-1', 'remin') !for cisonew.f90 & natdic.f90
+      call self%register_diagnostic_variable(self%id_wpoc,        'wpoc',        'm d-1',            'poc sinking speed', missing_value=0.0_rk, source=source_do)
+      call self%register_diagnostic_variable(self%id_wcal,        'wcal',        'm d-1',            'calcium carbonate sinking speed')
+      call self%register_diagnostic_variable(self%id_wopal,       'wopal',       'm d-1',            'opal sinking speed')
+      call self%register_diagnostic_variable(self%id_wdust,       'wdust',       'm d-1',            'dust sinking speed')
+      call self%register_diagnostic_variable(self%id_bkopal,      'bkopal',      'kmol Si m-3',      'half sat. constant for opal') !for bromo.f90
+      call self%register_diagnostic_variable(self%id_pocrem,      'pocrem',      'kmol P m-3 d-1',   'deep remineralization of POC') !for cisonew.f90 & natdic.f90
+      call self%register_diagnostic_variable(self%id_docrem,      'docrem',      'kmol P m-3 d-1',   'deep remineralization of DOC') !for cisonew.f90 & natdic.f90
+      call self%register_diagnostic_variable(self%id_remin2o,     'remin2o',     'kmol P m-3 d-1',   'remin2o') !for cisonew.f90 & natdic.f90
+      call self%register_diagnostic_variable(self%id_remin,       'remin',       'kmol P m-3 d-1',   'remin') !for cisonew.f90 & natdic.f90
       call self%register_diagnostic_variable(self%id_delcar_part, 'delcar_part', '-',                'calcium fraction of export') !for cisonew.f90 
-      call self%register_diagnostic_variable(self%id_delcar,      'delcar',      'kmol P m^-3 d^-1', 'delcar') !for natdic.f90
-      call self%register_diagnostic_variable(self%id_delsil,      'delsil',      'kmol P m^-3 d^-1', 'delsil') !for natdic.f90
+      call self%register_diagnostic_variable(self%id_delcar,      'delcar',      'kmol P m-3 d-1',   'delcar') !for natdic.f90
+      call self%register_diagnostic_variable(self%id_delsil,      'delsil',      'kmol P m-3 d-1',   'delsil') !for natdic.f90
       call self%register_diagnostic_variable(self%id_rdnit1,      'rdnit1',      '-',                'rdnit1') !for natdic.f90
+      call self%register_diagnostic_variable(self%id_dnit,        'dnit',        'kmol m-3 s-1',     'denitrification rate')
 
-      call self%register_diagnostic_variable(self%id_flux_opal,      'flux_opal',      'kmol Si m^-2 d^-1',                'bottom flux opal', source=source_do_bottom, output=output_instantaneous)
+      call self%register_diagnostic_variable(self%id_flux_opal,      'flux_opal', 'kmol Si m-2 d-1', 'bottom flux opal', source=source_do_bottom, output=output_instantaneous)
       
-      call self%register_state_dependency(self%id_doc,        'doc',        'kmol P m^-3', 'dissolvecd organic carbon')
-      call self%register_state_dependency(self%id_silica,     'silica',     'kmol Si m^-3', 'Silicid acid (Si(OH)4)')
-      call self%register_state_dependency(self%id_phosph,     'phosph',     'kmol P m^-3', 'phosphate')
-      call self%register_state_dependency(self%id_opal,       'opal',       'kmol Si m^-3', 'Biogenic silica')
-      call self%register_state_dependency(self%id_det_bot,    'det_bot',    'kmol P m^-2', 'target bottom pool for detritus')
-      call self%register_state_dependency(self%id_calc_bot,   'calc_bot',   'kmol C m^-2', 'target bottom pool for calcium')
-      call self%register_state_dependency(self%id_alkali_bot, 'alkali_bot', 'kmol m^-2', 'target bottom pool for alkali')
-      call self%register_state_dependency(self%id_opal_bot,   'opal_bot',   'kmol Si m^-2', 'target bottom pool for opal')
-      call self%register_state_dependency(self%id_fdust_bot,  'fdust_bot',  'kmol Fe m^-2', 'target bottom pool for dust')
+      call self%register_state_dependency(self%id_doc,        'doc',        'kmol P m-3',  'dissolvecd organic carbon')
+      call self%register_state_dependency(self%id_silica,     'silica',     'kmol Si m-3', 'Silicid acid (Si(OH)4)')
+      call self%register_state_dependency(self%id_phosph,     'phosph',     'kmol P m-3',  'phosphate')
+      call self%register_state_dependency(self%id_opal,       'opal',       'kmol Si m-3', 'Biogenic silica')
+      call self%register_state_dependency(self%id_det_bot,    'det_bot',    'kmol P m-2',  'target bottom pool for detritus')
+      call self%register_state_dependency(self%id_calc_bot,   'calc_bot',   'kmol C m-2',  'target bottom pool for calcium')
+      call self%register_state_dependency(self%id_alkali_bot, 'alkali_bot', 'kmol m-2',    'target bottom pool for alkali')
+      call self%register_state_dependency(self%id_opal_bot,   'opal_bot',   'kmol Si m-2', 'target bottom pool for opal')
+      call self%register_state_dependency(self%id_fdust_bot,  'fdust_bot',  'kmol Fe m-2', 'target bottom pool for dust')
       
-      call self%register_state_dependency(self%id_gasnit, 'gasnit', 'kmol N m^-3', 'Gaseous nitrogen (N2)')
-      call self%register_state_dependency(self%id_phy,    'phy',    'kmol P m^-3', 'phytoplankton')
-      call self%register_state_dependency(self%id_oxygen, 'oxygen', 'kmol O m^-3',  'Dissolved oxygen')
-      call self%register_state_dependency(self%id_sco212, 'sco212', 'kmol C m^-3', 'Dissolved co2')
-      call self%register_state_dependency(self%id_ano3,   'ano3',   'kmol N m^-3', 'Dissolved nitrate')
-      call self%register_state_dependency(self%id_an2o,   'an2o',   'kmol N m^-3', 'laughing gas')
-      call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol m^-3', 'Alkalinity')
-      call self%register_state_dependency(self%id_calc,   'calc',   'kmol C m^-3', 'Calcium carbonate')
-      call self%register_state_dependency(self%id_iron,   'iron',   'kmol Fe m^-3', 'dissolved iron')
-      call self%register_state_dependency(self%id_fdust,  'fdust',  'kg m^-3',   'non-aggregated dust deposition')
+      call self%register_state_dependency(self%id_gasnit, 'gasnit', 'kmol N m-3', 'Gaseous nitrogen (N2)')
+      call self%register_state_dependency(self%id_phy,    'phy',    'kmol P m-3', 'phytoplankton')
+      call self%register_state_dependency(self%id_oxygen, 'oxygen', 'kmol O m-3', 'Dissolved oxygen')
+      call self%register_state_dependency(self%id_sco212, 'sco212', 'kmol C m-3', 'Dissolved co2')
+      call self%register_state_dependency(self%id_ano3,   'ano3',   'kmol N m-3', 'Dissolved nitrate')
+      call self%register_state_dependency(self%id_an2o,   'an2o',   'kmol N m-3', 'laughing gas')
+      call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol m-3',   'Alkalinity')
+      call self%register_state_dependency(self%id_calc,   'calc',   'kmol C m-3', 'Calcium carbonate')
+      call self%register_state_dependency(self%id_iron,   'iron',   'kmol Fe m-3','dissolved iron')
+      call self%register_state_dependency(self%id_fdust,  'fdust',  'kg m-3',     'non-aggregated dust deposition')
       
-      call self%register_dependency(self%id_kmle,   'kmle',   'm',                'Mixed layer depth')
-      call self%register_dependency(self%id_phymor, 'phymor', 'kmol P m^-3 d^-1', 'photosynthetic mortality rate')
-      call self%register_dependency(self%id_phyrem, 'phyrem', 'kmol P m^-3 d^-1', 'photosynthetic remineralization rate')
-      call self%register_dependency(self%id_pommor, 'pommor', 'kmol P m^-3 d^-1', 'zooplankton particulate export from mortality')
-      call self%register_dependency(self%id_dimmor, 'dimmor', 'kmol P m^-3 d^-1', 'zooplankton dissolved inorganic export from mortality')
-      call self%register_dependency(self%id_phosy,  'phosy',  'kmol P m^-3 d^-1', 'photosynthetic rate')
-      call self%register_dependency(self%id_exud,   'exud',   'kmol P m^-3 d^-1', 'phytoplankton exudation rate')
-      call self%register_dependency(self%id_graton, 'graton', 'kmol P m^-3 d^-1', 'zooplankton sloppy feeding inorganic release rate')
-      call self%register_dependency(self%id_grawa,  'grawa',  'kmol P m^-3 d^-1', 'zooplankton assimilation rate')
-      call self%register_dependency(self%id_gratpoc,'gratpoc','kmol P m^-3 d^-1', 'zooplankton sloppy feeding particulate release rate')
-      call self%register_dependency(self%id_satoxy, 'satoxy', 'kmol O m^-3',  'oxygen solubility')
+      call self%register_dependency(self%id_kmle,   'kmle',   'm',              'Mixed layer depth')
+      call self%register_dependency(self%id_phymor, 'phymor', 'kmol P m-3 d-1', 'photosynthetic mortality rate')
+      call self%register_dependency(self%id_phyrem, 'phyrem', 'kmol P m-3 d-1', 'photosynthetic remineralization rate')
+      call self%register_dependency(self%id_pommor, 'pommor', 'kmol P m-3 d-1', 'zooplankton particulate export from mortality')
+      call self%register_dependency(self%id_dimmor, 'dimmor', 'kmol P m-3 d-1', 'zooplankton dissolved inorganic export from mortality')
+      call self%register_dependency(self%id_phosy,  'phosy',  'kmol P m-3 d-1', 'photosynthetic rate')
+      call self%register_dependency(self%id_exud,   'exud',   'kmol P m-3 d-1', 'phytoplankton exudation rate')
+      call self%register_dependency(self%id_graton, 'graton', 'kmol P m-3 d-1', 'zooplankton sloppy feeding inorganic release rate')
+      call self%register_dependency(self%id_grawa,  'grawa',  'kmol P m-3 d-1', 'zooplankton assimilation rate')
+      call self%register_dependency(self%id_gratpoc,'gratpoc','kmol P m-3 d-1', 'zooplankton sloppy feeding particulate release rate')
+      call self%register_dependency(self%id_satoxy, 'satoxy', 'kmol O m-3',     'oxygen solubility')
       
       call self%register_dependency(self%id_depth, standard_variables%depth)
       call self%register_dependency(self%id_ptho, standard_variables%temperature)
       
-      call self%register_dependency(self%id_wdust_in, 'wdust', 'm s^-1', 'dust sinking speed')
-      call self%register_dependency(self%id_wopal_in, 'wopal', 'm d^-1', 'opal sinking speed')
-      call self%register_dependency(self%id_wcal_in,  'wcal',  'm d^-1', 'calcium carbonate sinking speed')
-      call self%register_dependency(self%id_wpoc_in,  'wpoc',  'm d^-1', 'poc sinking speed')
+      call self%register_dependency(self%id_wdust_in, 'wdust', 'm d-1', 'dust sinking speed')
+      call self%register_dependency(self%id_wopal_in, 'wopal', 'm d-1', 'opal sinking speed')
+      call self%register_dependency(self%id_wcal_in,  'wcal',  'm d-1', 'calcium carbonate sinking speed')
+      call self%register_dependency(self%id_wpoc_in,  'wpoc',  'm d-1', 'poc sinking speed')
    end subroutine
    
    subroutine do(self, _ARGUMENTS_DO_)
@@ -160,7 +162,7 @@ contains
       real(rk) :: sco212_roc, alkali_roc, oxygen_roc, calc_roc, silica_roc, opal_roc, iron_roc, fdust, remin2o, gasnit_roc, remin_out
       real(rk) :: sterzo, remin, opalrem, aou, refra, dustd1, dustd2, dustd3, dustsink, kmle, pupper, plower, vsmall, snow, fshear, fsh
       real(rk) :: fse, eps, e1, e2, e3, e4, es1, es3, TopF, TMFac, TSFac, alar2, alar3, TopM, wmass, wnumb, alow2, alow3, sagg1, sagg2, sagg4
-      real(rk) :: shear_agg, sett_agg, effsti, aggregate, dfirst, dshagg, dsett, dustagg, wpoc, wcal, wopal, wnos
+      real(rk) :: shear_agg, sett_agg, effsti, aggregate, dfirst, dshagg, dsett, dustagg, wpoc, wcal, wopal, wnos, dnit
       
       _LOOP_BEGIN_                                    
          _GET_(self%id_ptho, ptho)               
@@ -203,6 +205,7 @@ contains
          gasnit_roc  = 0.0_rk
          an2o_roc    = 0.0_rk
          
+         dnit = 0.0_rk
          delcar_part = 0.0_rk
          delcar = 0.0_rk
          delsil = 0.0_rk
@@ -320,6 +323,7 @@ contains
                  gasnit_roc = gasnit_roc + rdnit2*remin+rdn2o2*remin2o
                  an2o_roc   = an2o_roc   - rdn2o1*remin2o
                  iron_roc   = iron_roc   + riron*(remin+remin2o)
+                 dnit = rdnit0*remin
                  if (ano3 < 3.0e-6_rk) then
                      remin = self%dremsul*det
                      pocrem = pocrem + remin
@@ -452,6 +456,7 @@ contains
          _SET_DIAGNOSTIC_(self%id_delcar_part, delcar_part) !for cisonew.f90
          _SET_DIAGNOSTIC_(self%id_delcar,      delcar) !for natdic.f90
          _SET_DIAGNOSTIC_(self%id_delsil,      delsil)
+         _SET_DIAGNOSTIC_(self%id_dnit,        dnit)
          
          _ADD_SOURCE_(self%id_calc,   calc_roc  /dtbgc)
          _ADD_SOURCE_(self%id_doc,    doc_roc   /dtbgc)

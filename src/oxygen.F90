@@ -36,7 +36,7 @@ contains
       class (type_ihamocc_oxygen), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      call self%register_state_variable(self%id_oxygen, 'oxygen', 'kmol m^-3', 'Dissolved oxygen', minimum=0.0_rk)
+      call self%register_state_variable(self%id_oxygen, 'oxygen', 'kmol m-3', 'Dissolved oxygen', minimum=0.0_rk)
 
       call self%register_dependency(self%id_psao,    standard_variables%practical_salinity)
       call self%register_dependency(self%id_ptho,    standard_variables%temperature)
@@ -44,8 +44,8 @@ contains
       call self%register_dependency(self%id_pfu10,   standard_variables%wind_speed)
       call self%register_dependency(self%id_ppao,    standard_variables%surface_air_pressure) ! surface air pressure in pascal
             
-      call self%register_diagnostic_variable(self%id_oxflux, 'oxflux', 'kmol m^-2 s^-1', 'oxygen surface flux')
-      call self%register_diagnostic_variable(self%id_satoxy, 'satoxy', 'kmol m^-3', 'oxygen solubility')
+      call self%register_diagnostic_variable(self%id_oxflux, 'oxflux', 'kmol m-2 s-1', 'oxygen surface flux')
+      call self%register_diagnostic_variable(self%id_satoxy, 'satoxy', 'kmol m-3',     'oxygen solubility')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)

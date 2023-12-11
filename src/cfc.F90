@@ -25,9 +25,9 @@ contains
       class (type_ihamocc_cfc), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      call self%register_state_variable(self%id_cfc11, 'cfc11', 'kmol/m^3', 'Dissolved cfc 11 gas', minimum=0.0_rk)
-      call self%register_state_variable(self%id_cfc12, 'cfc12', 'kmol/m^3', 'Dissolved cfc 12 gas', minimum=0.0_rk)
-      call self%register_state_variable(self%id_sf6,   'sf6',   'kmol/m^3', 'Dissolved sf 6 gas', minimum=0.0_rk)
+      call self%register_state_variable(self%id_cfc11, 'cfc11', 'kmol m-3', 'Dissolved cfc 11 gas', minimum=0.0_rk)
+      call self%register_state_variable(self%id_cfc12, 'cfc12', 'kmol m-3', 'Dissolved cfc 12 gas', minimum=0.0_rk)
+      call self%register_state_variable(self%id_sf6,   'sf6',   'kmol m-3', 'Dissolved sf 6 gas', minimum=0.0_rk)
 
       call self%register_dependency(self%id_ppao,      standard_variables%surface_air_pressure) ! surface air pressure in pascal
       call self%register_dependency(self%id_psao,      standard_variables%practical_salinity)
@@ -36,11 +36,11 @@ contains
       call self%register_dependency(self%id_pfu10,     standard_variables%wind_speed)
       call self%register_dependency(self%id_atm_cfc11, 'atm_cfc11', 'ppt', 'atmospheric cfc11 concentration')
       call self%register_dependency(self%id_atm_cfc12, 'atm_cfc12', 'ppt', 'atmospheric cfc12 concentration')
-      call self%register_dependency(self%id_atm_sf6,   'atm_sf6', 'ppt', 'atmospheric sf6 concentration') 
+      call self%register_dependency(self%id_atm_sf6,   'atm_sf6',   'ppt', 'atmospheric sf6 concentration') 
       
-      call self%register_diagnostic_variable(self%id_atmf11, 'atmf11', 'kmol/m2/s', 'cfc 11 surface flux')
-      call self%register_diagnostic_variable(self%id_atmf12, 'atmf12', 'kmol/m2/s', 'cfc 12 surface flux')
-      call self%register_diagnostic_variable(self%id_atmsf6, 'atmsf6', 'kmol/m2/s', 'sf 6 surface flux')
+      call self%register_diagnostic_variable(self%id_atmf11, 'atmf11', 'kmol m-2 s-1', 'cfc 11 surface flux')
+      call self%register_diagnostic_variable(self%id_atmf12, 'atmf12', 'kmol m-2 s-1', 'cfc 12 surface flux')
+      call self%register_diagnostic_variable(self%id_atmsf6, 'atmsf6', 'kmol m-2 s-1', 'sf 6 surface flux')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)

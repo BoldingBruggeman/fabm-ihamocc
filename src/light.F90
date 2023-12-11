@@ -26,17 +26,17 @@ contains
       class (type_ihamocc_light), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      call self%get_parameter(self%atten_w,  'atten_w',  '1/m', 'yellow substances attenuation coefficient',                   default=0.04_rk)
-      call self%get_parameter(self%atten_uv, 'atten_uv', '1/m', 'uv attenuation coefficient',                                  default=0.33_rk) 
+      call self%get_parameter(self%atten_w,  'atten_w',  'm-1', 'yellow substances attenuation coefficient',                   default=0.04_rk)
+      call self%get_parameter(self%atten_uv, 'atten_uv', 'm-1', 'uv attenuation coefficient',                                  default=0.33_rk) 
       call self%get_parameter(self%ctochl,   'ctochl',   '-',   'Carbon to chlorophyl ratio',                                  default=60._rk)
 
-      call self%register_state_dependency(self%id_phy, 'phy', 'kmol/m^3', 'phytoplankton')
+      call self%register_state_dependency(self%id_phy, 'phy', 'kmol m-3', 'phytoplankton')
       
       call self%register_dependency(self%id_strahl,     standard_variables%surface_downwelling_shortwave_flux)
       call self%register_dependency(self%id_dz,         standard_variables%cell_thickness)
       
-      call self%register_diagnostic_variable(self%id_uv,     'uv',     'W/m^2', 'remaining uv light not absorbed above',source=source_do_column)
-      call self%register_diagnostic_variable(self%id_light,  'light',  'W/m^2', 'remaining PAR light not absorbed above',source=source_do_column)
+      call self%register_diagnostic_variable(self%id_uv,     'uv',     'W m-2', 'remaining uv light not absorbed above',source=source_do_column)
+      call self%register_diagnostic_variable(self%id_light,  'light',  'W m-2', 'remaining PAR light not absorbed above',source=source_do_column)
    end subroutine
    
    subroutine do_column(self, _ARGUMENTS_DO_COLUMN_)

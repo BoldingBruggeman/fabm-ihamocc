@@ -24,10 +24,10 @@ contains
       class (type_ihamocc_iron), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      call self%register_state_variable(self%id_iron,  'iron',  'kmol/m^3', 'dissolved iron', minimum=0.0_rk)
+      call self%register_state_variable(self%id_iron,  'iron',  'kmol m-3', 'dissolved iron', minimum=0.0_rk)
       call self%add_to_aggregate_variable(standard_variables%total_iron,       self%id_iron, scale_factor=1e9_rk)
       
-      call self%register_state_variable(self%id_fdust, 'fdust', 'kg/m^3',   'non-aggregated dust deposition', minimum=0.0_rk)
+      call self%register_state_variable(self%id_fdust, 'fdust', 'kg m-3',   'non-aggregated dust deposition', minimum=0.0_rk)
 
       call self%register_dependency(self%id_dust, 'dust', 'kg m-2 s-1', 'dust deposition rate')
    end subroutine

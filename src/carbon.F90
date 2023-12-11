@@ -26,28 +26,28 @@ contains
       class (type_ihamocc_carbon), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      call self%register_state_variable(self%id_sco212, 'sco212', 'kmol/m^3', 'Dissolved co2', minimum=0.0_rk)
+      call self%register_state_variable(self%id_sco212, 'sco212', 'kmol m-3', 'Dissolved co2', minimum=0.0_rk)
       call self%add_to_aggregate_variable(standard_variables%total_carbon,     self%id_sco212, scale_factor=1e6_rk)
-      call self%register_state_variable(self%id_alkali, 'alkali', 'kmol/m^3', 'Alkalinity', minimum=0.0_rk)
-      call self%register_state_variable(self%id_calc,   'calc',   'kmol/m^3', 'Calcium carbonate', minimum=0.0_rk)
+      call self%register_state_variable(self%id_alkali, 'alkali', 'kmol m-3', 'Alkalinity', minimum=0.0_rk)
+      call self%register_state_variable(self%id_calc,   'calc',   'kmol m-3', 'Calcium carbonate', minimum=0.0_rk)
       call self%add_to_aggregate_variable(standard_variables%total_carbon,     self%id_calc, scale_factor=1e6_rk)
       
-      call self%register_diagnostic_variable(self%id_Kw,       'Kw',       'mol/kg',              'Water dissociation product')
-      call self%register_diagnostic_variable(self%id_hi,       'hi',       'mol/kg',              'Hydrogen ion concentration',missing_value=1.e-20_rk)
-      call self%register_diagnostic_variable(self%id_co2star,  'co2star',  'mol/kg',              'Dissolved CO2 (CO2*)')
-      call self%register_diagnostic_variable(self%id_co3,      'co3',      'kmol/m3',             'Dissolved carbonate (CO3)')
-      call self%register_diagnostic_variable(self%id_dicsat,   'dicsat',   'kmol/m3',             'Saturated dic')
-      call self%register_diagnostic_variable(self%id_omegaA,   'omegaA',   '-',                   'omegaA')
-      call self%register_diagnostic_variable(self%id_omegaC,   'omegaC',   '-',                   'omegaC')
-      call self%register_diagnostic_variable(self%id_co2fxd,   'co2fxd',   'kmol/m2/s',           'Downwards co2 surface flux')
-      call self%register_diagnostic_variable(self%id_co2fxu,   'co2fxu',   'kmol/m2/s',           'Upwards co2 surface flux')
-      call self%register_diagnostic_variable(self%id_pco2d,    'pco2d',    'microatm',            'Dry air co2 pressure')
-      call self%register_diagnostic_variable(self%id_pco2m,    'pco2m',    'microatm',            'Moist air co2 pressure')
-      call self%register_diagnostic_variable(self%id_kwco2sol, 'kwco2sol', 'm/s mol/kg/microatm', 'kwco2sol')
-      call self%register_diagnostic_variable(self%id_kwco2d,   'kwco2d',   'm/s',                 'kwco2d')
-      call self%register_diagnostic_variable(self%id_co2sold,  'co2sold',  'mol/kg/atm',          'co2sold')
-      call self%register_diagnostic_variable(self%id_co2solm,  'co2solm',  'mol/kg/atm',          'co2solm')
-      call self%register_diagnostic_variable(self%id_dissol,   'dissol',   'kmol/m^3',            'dissol')
+      call self%register_diagnostic_variable(self%id_Kw,       'Kw',       'mol kg-1',                  'Water dissociation product')
+      call self%register_diagnostic_variable(self%id_hi,       'hi',       'mol kg-1',                  'Hydrogen ion concentration',missing_value=1.e-20_rk)
+      call self%register_diagnostic_variable(self%id_co2star,  'co2star',  'mol kg-1',                  'Dissolved CO2 (CO2*)')
+      call self%register_diagnostic_variable(self%id_co3,      'co3',      'kmol m-3',                  'Dissolved carbonate (CO3)')
+      call self%register_diagnostic_variable(self%id_dicsat,   'dicsat',   'kmol m-3',                  'Saturated dic')
+      call self%register_diagnostic_variable(self%id_omegaA,   'omegaA',   '-',                         'omegaA')
+      call self%register_diagnostic_variable(self%id_omegaC,   'omegaC',   '-',                         'omegaC')
+      call self%register_diagnostic_variable(self%id_co2fxd,   'co2fxd',   'kmol m-2 s-1',              'Downwards co2 surface flux')
+      call self%register_diagnostic_variable(self%id_co2fxu,   'co2fxu',   'kmol m-2 s-1',              'Upwards co2 surface flux')
+      call self%register_diagnostic_variable(self%id_pco2d,    'pco2d',    'microatm',                  'Dry air co2 pressure')
+      call self%register_diagnostic_variable(self%id_pco2m,    'pco2m',    'microatm',                  'Moist air co2 pressure')
+      call self%register_diagnostic_variable(self%id_kwco2sol, 'kwco2sol', 'm mol s-1 kg-1 microatm-1', 'kwco2sol')
+      call self%register_diagnostic_variable(self%id_kwco2d,   'kwco2d',   'm s-1',                     'kwco2d')
+      call self%register_diagnostic_variable(self%id_co2sold,  'co2sold',  'mol kg-1 atm-1',            'co2sold')
+      call self%register_diagnostic_variable(self%id_co2solm,  'co2solm',  'mol kg-1 atm-1',            'co2solm')
+      call self%register_diagnostic_variable(self%id_dissol,   'dissol',   'kmol m-3',                  'dissol')
       
       call self%register_dependency(self%id_ppao,         standard_variables%surface_air_pressure) ! surface air pressure in pascal
       call self%register_dependency(self%id_psao,         standard_variables%practical_salinity)
@@ -58,9 +58,9 @@ contains
       call self%register_dependency(self%id_pfu10,        standard_variables%wind_speed)
       call self%register_dependency(self%id_psicomo,      standard_variables%ice_area_fraction)
       call self%register_dependency(self%id_atco2,        'atco2',  '-',        'surface air carbon dioxide mixing ratio') ! atmospheric co2 mixing ratio (i.e. partial presure = mixing ratio*SLP/P_0 [atm]) 
-      call self%register_dependency(self%id_hi_in,        'hi',     'mol/kg',   'Hydrogen ion concentration')
-      call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
-      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved phosphate')
+      call self%register_dependency(self%id_hi_in,        'hi',     'mol kg-1', 'Hydrogen ion concentration')
+      call self%register_state_dependency(self%id_silica, 'silica', 'kmol m-3', 'Silicid acid (Si(OH)4)')
+      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol m-3', 'Dissolved phosphate')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)
@@ -127,7 +127,7 @@ contains
          ! mixing ratio (i.e. partial presure = mixing ratio*SLP/P_0 [atm])
          rpp0 = ppao/atm2pa
 
-         fluxd=atco2*rpp0*kwco2*dtbgc*Kh*1.e-6_rk*rrho ! Kh is in mol/kg/atm. Multiply by rrho (g/cm^3) to get fluxes in kmol/m^2   NOTE: originally multiplied by dtbgc (86400s/d). Removed as FABM rates-of-change has units s-1
+         fluxd=atco2*rpp0*kwco2*dtbgc*Kh*1.e-6_rk*rrho ! Kh is in mol/kg/atm. Multiply by rrho (g/cm^3) to get fluxes in kmol/m^2   
          fluxu=pco2      *kwco2*dtbgc*Kh*1.e-6_rk*rrho
          fluxu=min(fluxu,fluxd-(1.e-5_rk - sco212)*pddpo) !JT set limit for CO2 outgassing to avoid negative DIC concentration, set minimum DIC concentration to 1e-5 kmol/m3 
 
@@ -140,8 +140,8 @@ contains
          _ADD_SURFACE_FLUX_(self%id_sco212, (fluxd-fluxu)/dtbgc)  !Nic: divided by the time step to get instantaneous rate of change
          
          _SET_SURFACE_DIAGNOSTIC_(self%id_dicsat, dicsat) !NOTE: Nic: Implemented as surface diagnostic. If required further down the water column, a subroutine with a vertical loop will be implemented.
-         _SET_SURFACE_DIAGNOSTIC_(self%id_co2fxd, fluxd) ! Save up- and downward components of carbon fluxes for output
-         _SET_SURFACE_DIAGNOSTIC_(self%id_co2fxu, fluxu)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_co2fxd, fluxd/dtbgc) ! Save up- and downward components of carbon fluxes for output
+         _SET_SURFACE_DIAGNOSTIC_(self%id_co2fxu, fluxu/dtbgc)
          _SET_SURFACE_DIAGNOSTIC_(self%id_pco2d, cu * 1.e6 / Khd) ! Save pco2 w.r.t. dry air for output
          _SET_SURFACE_DIAGNOSTIC_(self%id_pco2m, pco2) !pCO2 wrt moist air
          _SET_SURFACE_DIAGNOSTIC_(self%id_kwco2sol, kwco2*Kh*1e-6) ! Save product of piston velocity and solubility for output

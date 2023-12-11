@@ -37,22 +37,22 @@ contains
       call self%get_parameter(self%dmsp2,      'dmsp2',      '-','dms parameter 2',             default=0.0011_rk) !Following Kloster et al., 06 Table 1
       call self%get_parameter(self%dmsp1,      'dmsp1',      '-','dms parameter 1',             default=10._rk) !2*5. production with temp
                   
-      call self%register_state_variable(self%id_dms, 'dms', 'kmol/m^3', 'dimethyl sulfide concentration', minimum=0.0_rk)
+      call self%register_state_variable(self%id_dms, 'dms', 'kmol m-3', 'dimethyl sulfide concentration', minimum=0.0_rk)
  
       call self%register_dependency(self%id_ptho,    standard_variables%temperature)
       call self%register_dependency(self%id_psicomo, standard_variables%ice_area_fraction)
       call self%register_dependency(self%id_pfu10,   standard_variables%wind_speed)
       call self%register_dependency(self%id_depth,   standard_variables%depth)
-      call self%register_dependency(self%id_light,   'light',  'W/m^2',        'remaining PAR light not absorbed above')
+      call self%register_dependency(self%id_light,   'light',  'W m-2',        'remaining PAR light not absorbed above')
       if (self%with_dmsph) then
-          call self%register_dependency(self%id_pi_ph,   'pi_pi',  'mol/kg',       'PI pH') ! NIC: this appears to be just the ph value of seawater(?)
-          call self%register_dependency(self%id_hi,      'hi',     'mol/kg',       'Hydrogen ion concentration')
+          call self%register_dependency(self%id_pi_ph,   'pi_pi',  'mol kg-1',       'PI pH') ! NIC: this appears to be just the ph value of seawater(?)
+          call self%register_dependency(self%id_hi,      'hi',     'mol kg-1',       'Hydrogen ion concentration')
       endif
       
-      call self%register_dependency(self%id_delcar,  'delcar', 'kmol/m^3 d-1', 'delcar')
-      call self%register_dependency(self%id_delsil,  'delsil', 'kmol/m^3 d-1', 'delsil')
+      call self%register_dependency(self%id_delcar,  'delcar', 'kmol m-3 d-1', 'delcar')
+      call self%register_dependency(self%id_delsil,  'delsil', 'kmol m-3 d-1', 'delsil')
 
-      call self%register_diagnostic_variable(self%id_atmdms, 'atmdms', 'kmol/m2/s', 'dimethyl sulfide surface flux')
+      call self%register_diagnostic_variable(self%id_atmdms, 'atmdms', 'kmol m2 s-1', 'dimethyl sulfide surface flux')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)

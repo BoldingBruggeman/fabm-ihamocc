@@ -49,19 +49,19 @@ contains
       call self%get_parameter(self%tf1,     'tf1',     '-',   'N-fix T dependency parameter 1',              default=0.2253_rk)
       call self%get_parameter(self%tf0,     'tf0',     '-',   'N-fix T dependency parameter 0',              default=-2.7819_rk)
       call self%get_parameter(self%tff,     'tff',     '-',   'Trichodesmium max growth rate',               default=0.2395_rk)
-      call self%get_parameter(self%bluefix, 'bluefix', '1/d', 'nitrogen fixation rate',                      default=0.005_rk)
+      call self%get_parameter(self%bluefix, 'bluefix', 'd-1', 'nitrogen fixation rate',                      default=0.005_rk)
       
       ! Register state variables
-      call self%register_state_variable(self%id_gasnit, 'gasnit', 'kmol/m^3', 'Gaseous nitrogen (N2)', minimum=0.0_rk)
-      call self%register_state_variable(self%id_an2o,   'an2o',   'kmol/m^3', 'laughing gas', minimum=0.0_rk)
-      call self%register_state_variable(self%id_ano3,   'ano3',   'kmol/m^3', 'dissolved nitrate', minimum=0.0_rk)
+      call self%register_state_variable(self%id_gasnit, 'gasnit', 'kmol m-3', 'Gaseous nitrogen (N2)', minimum=0.0_rk)
+      call self%register_state_variable(self%id_an2o,   'an2o',   'kmol m-3', 'laughing gas', minimum=0.0_rk)
+      call self%register_state_variable(self%id_ano3,   'ano3',   'kmol m-3', 'dissolved nitrate', minimum=0.0_rk)
       call self%add_to_aggregate_variable(standard_variables%total_nitrogen,   self%id_gasnit, scale_factor=1e6_rk)
       call self%add_to_aggregate_variable(standard_variables%total_nitrogen,   self%id_an2o, scale_factor=1e6_rk)
       call self%add_to_aggregate_variable(standard_variables%total_nitrogen,   self%id_ano3, scale_factor=1e6_rk)
 
       ! Register state dependencies
-      call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol/m^3', 'Alkalinity')
-      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved hosphate')
+      call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol m-3', 'Alkalinity')
+      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol m-3', 'Dissolved hosphate')
       
       ! Register environmental dependencies
       call self%register_dependency(self%id_ndep_in, 'ndep_in', 'kmol m-2 s-1', 'nitrogen deposition flux')
@@ -75,8 +75,8 @@ contains
       call self%register_dependency(self%id_ptho,    standard_variables%temperature)
       
       ! Register diagnostics
-      call self%register_diagnostic_variable(self%id_ndep,  'ndep',  'kmol/m2/s', 'nitrogen deposition flux')
-      call self%register_diagnostic_variable(self%id_dano3, 'dano3', 'kmol/m3/d', 'nitrogen fixation rate')
+      call self%register_diagnostic_variable(self%id_ndep,  'ndep',  'kmol m-2 s-1', 'nitrogen deposition flux')
+      call self%register_diagnostic_variable(self%id_dano3, 'dano3', 'kmol m-3 d-1', 'nitrogen fixation rate')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)

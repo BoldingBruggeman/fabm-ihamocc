@@ -23,7 +23,7 @@ contains
       class (type_ihamocc_alkalinization), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol/m^3', 'Alkalinity')
+      call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol m-3', 'Alkalinity')
 
       call self%register_dependency(self%id_oafx, 'oafx', 'kmol m-2 s-1', 'ocean alkalinization flux')
    end subroutine

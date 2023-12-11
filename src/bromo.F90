@@ -31,25 +31,25 @@ contains
       call self%get_parameter(self%fbro1,'fbro1', '-', 'fbro1', default=1._rk*rnit)
       call self%get_parameter(self%fbro2,'fbro2', '-', 'fbro2', default=1._rk*rnit)
       
-      call self%register_state_variable(self%id_bromo, 'bromoform', 'kmol/m^3', 'Dissolved bromoform', minimum=0.0_rk)
+      call self%register_state_variable(self%id_bromo, 'bromoform', 'kmol m-3', 'Dissolved bromoform', minimum=0.0_rk)
 
       call self%register_dependency(self%id_depth,    standard_variables%depth)
       call self%register_dependency(self%id_ptho,     standard_variables%temperature)
       call self%register_dependency(self%id_psicomo,  standard_variables%ice_area_fraction)
       call self%register_dependency(self%id_pfu10,    standard_variables%wind_speed)
       call self%register_dependency(self%id_ppao,     standard_variables%surface_air_pressure) ! surface air pressure in pascal
-      call self%register_dependency(self%id_atmbromo, 'atmbromo', '-',          'surface air bromoform mixing ratio') 
-      call self%register_dependency(self%id_uv,       'uv',       'W/m^2',      'remaining uv light not absorbed above')
-      call self%register_dependency(self%id_hi,       'hi',       'mol/kg',     'Hydrogen ion concentration')
-      call self%register_dependency(self%id_Kw,       'kW',       'mol/kg',     'Water dissociation product')
-      call self%register_dependency(self%id_phosy,    'phosy',    'kmol/m3/d',  'photosynthetic production')
-      call self%register_dependency(self%id_bkopal,   'bkopal',   'kmol Si/m3', 'half sat. constant for opal')
-      call self%register_dependency(self%id_swa_clim, 'swa_clim', '??',         'swa climatology field')
-      call self%register_dependency(self%id_phosy,    'phosy',    'kmol/m3/d',  'photosynthetic rate')
+      call self%register_dependency(self%id_atmbromo, 'atmbromo', '-',            'surface air bromoform mixing ratio') 
+      call self%register_dependency(self%id_uv,       'uv',       'W m-2',        'remaining uv light not absorbed above')
+      call self%register_dependency(self%id_hi,       'hi',       'mol kg-1',     'Hydrogen ion concentration')
+      call self%register_dependency(self%id_Kw,       'kW',       'mol kg-1',     'Water dissociation product')
+      call self%register_dependency(self%id_phosy,    'phosy',    'kmol m-3 s-1', 'photosynthetic production')
+      call self%register_dependency(self%id_bkopal,   'bkopal',   'kmol Si m-3',  'half sat. constant for opal')
+      call self%register_dependency(self%id_swa_clim, 'swa_clim', '??',           'swa climatology field')
+      call self%register_dependency(self%id_phosy,    'phosy',    'kmol m-3 s-1', 'photosynthetic rate')
 
-      call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
+      call self%register_state_dependency(self%id_silica, 'silica', 'kmol m-3', 'Silicid acid (Si(OH)4)')
       
-      call self%register_diagnostic_variable(self%id_bromoflx, 'bromoflx', 'kmol/m2/s', 'Bromoform surface flux')
+      call self%register_diagnostic_variable(self%id_bromoflx, 'bromoflx', 'kmol m-2 s-1', 'Bromoform surface flux')
 
    end subroutine
    

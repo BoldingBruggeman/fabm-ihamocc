@@ -34,18 +34,18 @@ contains
       call self%get_parameter(self%atco2_nat, 'atco2_nat', 'ppm','CMIP6 pre-industrial reference CO2 atm concentration', default=284.32_rk)
       
       ! Register state variables
-      call self%register_state_variable(self%id_natcalc,   'natcalc',   'kmol/m^3', 'Natural Calcium carbonate', minimum=0.0_rk)
-      call self%register_state_variable(self%id_natsco212, 'natsco212', 'kmol/m^3', 'Dissolved natural co2', minimum=0.0_rk)
-      call self%register_state_variable(self%id_natalkali, 'natalkali', 'kmol/m^3', 'Natural alkalinity', minimum=0.0_rk)
+      call self%register_state_variable(self%id_natcalc,   'natcalc',   'kmol m-3', 'Natural Calcium carbonate', minimum=0.0_rk)
+      call self%register_state_variable(self%id_natsco212, 'natsco212', 'kmol m-3', 'Dissolved natural co2', minimum=0.0_rk)
+      call self%register_state_variable(self%id_natalkali, 'natalkali', 'kmol m-3', 'Natural alkalinity', minimum=0.0_rk)
       
       ! Register diagnostic variables
-      call self%register_diagnostic_variable(self%id_nathi,     'nathi',     'mol/kg',    'Natural Hydrogen ion concentration', missing_value=1.e-20_rk)
-      call self%register_diagnostic_variable(self%id_natco3,    'natco3',    'kmol/m3',   'Natural Dissolved carbonate (CO3)')
-      call self%register_diagnostic_variable(self%id_natco2fxd, 'natco2fxd', 'kmol/m2/s', 'Natural Downwards co2 surface flux')
-      call self%register_diagnostic_variable(self%id_natco2fxu, 'natco2fxu', 'kmol/m2/s', 'Natural Downwards co2 surface flux')
-      call self%register_diagnostic_variable(self%id_natpco2d,  'natpco2d',  'microatm',  'Natural Dry air co2 pressure')
-      call self%register_diagnostic_variable(self%id_natomegaA, 'natomegaA', '-',         'natomegaA')
-      call self%register_diagnostic_variable(self%id_natomegaC, 'natomegaC', '-',         'natomegaC')
+      call self%register_diagnostic_variable(self%id_nathi,     'nathi',     'mol kg-1',     'Natural Hydrogen ion concentration', missing_value=1.e-20_rk)
+      call self%register_diagnostic_variable(self%id_natco3,    'natco3',    'kmol m-3',     'Natural Dissolved carbonate (CO3)')
+      call self%register_diagnostic_variable(self%id_natco2fxd, 'natco2fxd', 'kmol m-2 s-1', 'Natural Downwards co2 surface flux')
+      call self%register_diagnostic_variable(self%id_natco2fxu, 'natco2fxu', 'kmol m-2 s-1', 'Natural Downwards co2 surface flux')
+      call self%register_diagnostic_variable(self%id_natpco2d,  'natpco2d',  'microatm',     'Natural Dry air co2 pressure')
+      call self%register_diagnostic_variable(self%id_natomegaA, 'natomegaA', '-',            'natomegaA')
+      call self%register_diagnostic_variable(self%id_natomegaC, 'natomegaC', '-',            'natomegaC')
 
       call self%register_dependency(self%id_psao,      standard_variables%practical_salinity)
       call self%register_dependency(self%id_ptho,      standard_variables%temperature)
@@ -56,25 +56,25 @@ contains
       call self%register_dependency(self%id_psicomo,   standard_variables%ice_area_fraction)
       call self%register_dependency(self%id_ppao,      standard_variables%surface_air_pressure) ! surface air pressure in pascal
       call self%register_dependency(self%id_depth,     standard_variables%depth)
-      call self%register_dependency(self%id_nathi_in,  'nathi',     'mol/kg',       'Natural Hydrogen ion concentration')
-      call self%register_dependency(self%id_remin2o,   'remin2o',   'kmol/m^3 d-1', 'remin2o')
-      call self%register_dependency(self%id_remin,     'remin',     'kmol/m^3 d-1', 'remin')
-      call self%register_dependency(self%id_phyrem,    'phyrem',    'kmol/m3/d',    'photosynthetic remineralization rate')
-      call self%register_dependency(self%id_dimmor,    'dimmor',    'kmol/m3/d',    'zooplankton dissolved inorganic export from mortality')
-      call self%register_dependency(self%id_phosy,     'phosy',     'kmol/m3/d',    'photosynthetic rate')
-      call self%register_dependency(self%id_graton,    'graton',    'kmol/m3/d',    'zooplankton sloppy feeding inorganic release rate')
-      call self%register_dependency(self%id_pocrem,    'pocrem',    'kmol/m^3 d-1', 'deep remineralization of POC') 
-      call self%register_dependency(self%id_docrem,    'docrem',    'kmol/m^3 d-1', 'deep remineralization of DOC')
-      call self%register_dependency(self%id_delcar,    'delcar',    'kmol/m^3 d-1', 'delcar')
+      call self%register_dependency(self%id_nathi_in,  'nathi',     'mol kg-1',     'Natural Hydrogen ion concentration')
+      call self%register_dependency(self%id_remin2o,   'remin2o',   'kmol m-3 d-1', 'remin2o')
+      call self%register_dependency(self%id_remin,     'remin',     'kmol m-3 d-1', 'remin')
+      call self%register_dependency(self%id_phyrem,    'phyrem',    'kmol m-3 d-1', 'photosynthetic remineralization rate')
+      call self%register_dependency(self%id_dimmor,    'dimmor',    'kmol m-3 d-1', 'zooplankton dissolved inorganic export from mortality')
+      call self%register_dependency(self%id_phosy,     'phosy',     'kmol m-3 d-1', 'photosynthetic rate')
+      call self%register_dependency(self%id_graton,    'graton',    'kmol m-3 d-1', 'zooplankton sloppy feeding inorganic release rate')
+      call self%register_dependency(self%id_pocrem,    'pocrem',    'kmol m-3 d-1', 'deep remineralization of POC') 
+      call self%register_dependency(self%id_docrem,    'docrem',    'kmol m-3 d-1', 'deep remineralization of DOC')
+      call self%register_dependency(self%id_delcar,    'delcar',    'kmol m-3 d-1', 'delcar')
       call self%register_dependency(self%id_rdnit1,    'rdnit1',    '-',            'rdnit1') !for natdic.f90
-      call self%register_dependency(self%id_dano3,     'dano3',     'kmol/m^3 d-1', 'dano3') 
+      call self%register_dependency(self%id_dano3,     'dano3',     'kmol m-3 d-1', 'dano3') 
       call self%register_dependency(self%id_wcal,      'wcal',      'm d-1',        'calcium carbonate sinking speed')
       
       ! Register environmental dependencies
-      call self%register_state_dependency(self%id_silica, 'silica', 'kmol/m^3', 'Silicid acid (Si(OH)4)')
-      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'Dissolved hosphate')
-      call self%register_state_dependency(self%id_oxygen, 'oxygen', 'kmol/m3',  'Dissolved oxygen')
-      call self%register_state_dependency(self%id_ano3,   'ano3',   'kmol/m^3', 'Dissolved nitrate')
+      call self%register_state_dependency(self%id_silica, 'silica', 'kmol m-3', 'Silicid acid (Si(OH)4)')
+      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol m-3', 'Dissolved hosphate')
+      call self%register_state_dependency(self%id_oxygen, 'oxygen', 'kmol m-3',  'Dissolved oxygen')
+      call self%register_state_dependency(self%id_ano3,   'ano3',   'kmol m-3', 'Dissolved nitrate')
    end subroutine
    
    subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)
@@ -146,8 +146,8 @@ contains
          
          _ADD_SURFACE_FLUX_(self%id_natsco212, (natfluxd-natfluxu)/dtbgc)  !Nic: divided by the time step to get instantaneous rate of change
          
-         _SET_SURFACE_DIAGNOSTIC_(self%id_natco2fxd, natfluxd) ! Save up- and downward components of carbon fluxes for output
-         _SET_SURFACE_DIAGNOSTIC_(self%id_natco2fxu, natfluxu)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_natco2fxd, natfluxd/dtbgc) ! Save up- and downward components of carbon fluxes for output
+         _SET_SURFACE_DIAGNOSTIC_(self%id_natco2fxu, natfluxu/dtbgc)
          _SET_SURFACE_DIAGNOSTIC_(self%id_natpco2d, natcu * 1.e6 / Khd) ! Save pco2 w.r.t. dry air for output
       _SURFACE_LOOP_END_
    end subroutine do_surface   

@@ -23,15 +23,15 @@ contains
       class (type_ihamocc_preformed_tracer), intent(inout), target :: self
       integer,                  intent(in)            :: configunit
       
-      call self%register_state_dependency(self%id_oxygen, 'oxygen', 'kmol/m^3', 'Dissolved oxygen')
-      call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol/m^3', 'Alkalinity')
-      call self%register_state_dependency(self%id_sco212, 'sco212', 'kmol/m^3', 'Dissolved co2')
-      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol/m^3', 'dissolved phosphate')
+      call self%register_state_dependency(self%id_oxygen, 'oxygen', 'kmol m-3', 'Dissolved oxygen')
+      call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol m-3', 'Alkalinity')
+      call self%register_state_dependency(self%id_sco212, 'sco212', 'kmol m-3', 'Dissolved co2')
+      call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol m-3', 'dissolved phosphate')
       
-      call self%register_diagnostic_variable(self%id_prefo2,     'prefo2',     'kmol/m^3', 'preformed Dissolved oxygen')
-      call self%register_diagnostic_variable(self%id_prefpo4,    'prefpo4',    'kmol/m^3', 'preformed dissolved phosphate')
-      call self%register_diagnostic_variable(self%id_prefalk,    'prefalk',    'kmol/m^3', 'preformed Alkalinity')
-      call self%register_diagnostic_variable(self%id_prefdic,    'prefdic',    'kmol/m^3', 'preformed Dissolved co2')
+      call self%register_diagnostic_variable(self%id_prefo2,     'prefo2',     'kmol m-3', 'preformed Dissolved oxygen')
+      call self%register_diagnostic_variable(self%id_prefpo4,    'prefpo4',    'kmol m-3', 'preformed dissolved phosphate')
+      call self%register_diagnostic_variable(self%id_prefalk,    'prefalk',    'kmol m-3', 'preformed Alkalinity')
+      call self%register_diagnostic_variable(self%id_prefdic,    'prefdic',    'kmol m-3', 'preformed Dissolved co2')
    end subroutine
    
    subroutine do(self, _ARGUMENTS_DO_)

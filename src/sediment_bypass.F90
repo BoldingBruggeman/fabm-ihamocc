@@ -40,17 +40,17 @@ contains
       allocate(self%id_flux_out(self%ntracers))
       do i=1, self%ntracers
           write(index,'(i0)') i
-          call self%register_dependency(self%id_flux(i),  'flux'//trim(index),   'kmol/m-2 s-1',  'bottom flux '//trim(index))
+          call self%register_dependency(self%id_flux(i),  'flux'//trim(index),   'kmol m-2 s-1',  'bottom flux '//trim(index))
       
           ! Register diagnostics (fake state vars to receive sinking material)
-          call self%register_diagnostic_variable(self%id_pool(i), 'pool'//trim(index),'kmol/m^2', 'target bottom pool for pelagic tracer '//trim(index),source=source_constant, output=output_none, act_as_state_variable=.true.)
-          call self%register_diagnostic_variable(self%id_flux_out(i), 'pool'//trim(index)//'flux','kmol/m^2', 'flux to target bottom pool for pelagic tracer '//trim(index),source=source_do, output=output_instantaneous)
+          call self%register_diagnostic_variable(self%id_pool(i), 'pool'//trim(index),'kmol m-2', 'target bottom pool for pelagic tracer '//trim(index),source=source_constant, output=output_none, act_as_state_variable=.true.)
+          call self%register_diagnostic_variable(self%id_flux_out(i), 'pool'//trim(index)//'flux','kmol m-2', 'flux to target bottom pool for pelagic tracer '//trim(index),source=source_do, output=output_instantaneous)
           
           ! couple to access the incoming flux
           call self%request_coupling(self%id_flux(i),'./pool'//trim(index)//'_sms_tot')
       
           ! target tracer to recieve flux evenly distributed back into the water column 
-          call self%register_state_dependency(self%id_tracer(i), 'tracer'//trim(index), 'kmol/m^3', 'target tracer to receive reintroduced bottom flux '//trim(index))
+          call self%register_state_dependency(self%id_tracer(i), 'tracer'//trim(index), 'kmol m-3', 'target tracer to receive reintroduced bottom flux '//trim(index))
       end do
    end subroutine
    
