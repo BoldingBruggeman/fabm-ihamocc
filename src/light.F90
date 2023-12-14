@@ -68,6 +68,6 @@ contains
          
          _SET_DIAGNOSTIC_(self%id_uv,uv)
          _SET_DIAGNOSTIC_(self%id_light,light)
-      _LOOP_END_
+      _DOWNWARD_LOOP_END_
    end subroutine do_column
 end module ihamocc_light
