@@ -30,10 +30,10 @@ module ihamocc_detritus
       procedure :: check_state
    end type type_ihamocc_detritus
    
-      real(rk), parameter :: rdnit0 = 0.8*ro2ut ! moles nitrate lost for remineralisation of 1 mole P. Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.
+      real(rk), parameter :: rdnit0 = 0.8_rk*ro2ut ! moles nitrate lost for remineralisation of 1 mole P. Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.
       real(rk), parameter :: rdnit1 = 0.8_rk*ro2ut-rnit !Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.
       real(rk), parameter :: rdnit2 = 0.4_rk*ro2ut !Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.      
-      real(rk), parameter :: rdn2o1 = 2._rk*ro2ut-2.5*rnit !Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.      
+      real(rk), parameter :: rdn2o1 = 2._rk*ro2ut-2.5_rk*rnit !Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.      
       real(rk), parameter :: rdn2o2 = 2._rk*ro2ut-2._rk*rnit !Paulmier et al. 2009, Table 1 and equation 18. Note that their R_0=ro2ut-2*rnit.      
       
 contains
