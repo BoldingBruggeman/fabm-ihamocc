@@ -1,3 +1,4 @@
+check_conservation: true
 instances:
   alkalinization:
     model: ihamocc/alkalinization
@@ -12,18 +13,18 @@ instances:
       calc: 0.0
     coupling:
       atco2: atco2/data
-      silica: detritus/silica
-      phosph: detritus/phosph
-#  cfc:
-#    model: ihamocc/cfc
-#    initialization:
-#      cfc11:
-#      cfc12:
-#      sf6:
-#    coupling:
-#      atm_cfc11: atm_cfc11_file
-#      atm_cfc12: atm_cfc12_file
-#      atm_sf6: atm_sf6_file
+      silica: silica/si
+      phosph: phosph/c
+  cfc:
+    model: ihamocc/cfc
+    initialization:
+      cfc11: 0.0
+      cfc12: 0.0
+      sf6: 0.0
+    coupling:
+      atm_cfc11: atm_cfc11/data
+      atm_cfc12: atm_cfc12/data
+      atm_sf6: atm_sf6/data
 #  cisonew:
 #    model: ihamocc/cisonew
 #    parameters:
@@ -86,14 +87,14 @@ instances:
       dremn2o: 0.01
       dremsul: 0.005
       bkopal: 5.e-6
-      ropal: 10.5
-      rcalc: 14.
+      ropal: 30.
+      rcalc: 40.
       claydens: 2600
       relaxfe: 1.3699e-4
       wpoc: 5.
       wcal: 30.
-      wopal: 30.
-      AGG: false
+      wopal: 15. #30.
+      AGG: true
       WLIN: false
     initialization:
       det: 4.26e-10
@@ -176,31 +177,31 @@ instances:
     parameters:
       avt_c: 5.e-4
       minh: 10.
-#  natdic:
-#    model: ihamocc/natdic
-#    parameters:
-#      atco2_nat: 284.32
-#    initialization:
-#      natcalc: 
-#      natsco212:
-#      natalkali:
-#    coupling:
-#      silica: detritus/silica
-#      phosph: detritus/phosph
-#      oxygen: oxygen/oxygen
-#      ano3: nitrogen/ano3
-#      remin2o: detritus/remin2o
-#      remin: detritus/remin
-#      phyrem: phytoplankton/phyrem
-#      dimmor: zooplankton/dimmor  
-#      phosy: phytoplankton/phosy
-#      graton: zooplankton/graton
-#      pocrem: detritus/pocrem
-#      docrem: detritus/docrem
-#      delcar: detritus/delcar
-#      rdnit1: detritus/rdnit1
-#      dano3: nitrogen/dano3
-#      wcal:  detritus/wcal
+  natdic:
+    model: ihamocc/natdic
+    parameters:
+      atco2_nat: 284.32
+    initialization:
+      natcalc: 0.0
+      natsco212: 2.45e-3
+      natalkali: 2.4e-3
+    coupling:
+      silica: silica/si
+      phosph: phosph/c
+      oxygen: oxygen/oxygen
+      ano3: nitrogen/ano3
+      remin2o: detritus/remin2o
+      remin: detritus/remin
+      phyrem: phytoplankton/phyrem
+      dimmor: zooplankton/dimmor  
+      phosy: phytoplankton/phosy
+      graton: zooplankton/graton
+      pocrem: detritus/pocrem
+      docrem: detritus/docrem
+      delcar: detritus/delcar
+      rdnit1: detritus/rdnit1
+      dano3: nitrogen/dano3
+      wcal:  detritus/wcal
   nitrogen:
     model: ihamocc/nitrogen
     parameters:
@@ -215,7 +216,7 @@ instances:
       ano3: 2.75e-6
     coupling:
       alkali: carbon/alkali
-      phosph: detritus/phosph
+      phosph: phosph/c
       ndep_in: ndep/data
       kmle: mixed_layer/kmle
   opal:
@@ -242,19 +243,16 @@ instances:
       bkphy: 4.e-8
       dyphy: 0.004
       gammap: 0.04
-      ropal: 30.
-      rcalc: 40.
     initialization:
       phy: 3.69e-9
     coupling:
-      silica: detritus/silica
       sco212: carbon/sco212
-      phosph: detritus/phosph
+      phosph: phosph/c
       ano3: nitrogen/ano3
       iron: iron/iron
       det: detritus/det
       oxygen: oxygen/oxygen
-      doc: detritus/doc
+      doc: doc/c
       light: light/light
   preftrc:
     model: ihamocc/preformed_tracer
@@ -262,7 +260,7 @@ instances:
       oxygen: oxygen/oxygen
       alkali: carbon/alkali
       sco212: carbon/sco212
-      phosph: detritus/phosph
+      phosph: phosph/c
   sediment_bypass:
     model: ihamocc/sediment_bypass
     parameters:
@@ -271,7 +269,7 @@ instances:
       tracer1: detritus/det
       tracer2: carbon/sco212
       tracer3: carbon/alkali
-      tracer4: detritus/silica
+      tracer4: silica/si
       tracer5: iron/fdust
       #tracer6: cisonew/det13
       #tracer7: cisonew/det14
@@ -300,7 +298,7 @@ instances:
       phytomi: phytoplankton/phytomi
       phosy: phytoplankton/phosy
       phy: phytoplankton/phy
-      doc: detritus/doc
+      doc: doc/c
   oafx:
     model: surface_constant                  
     parameters:
@@ -326,3 +324,18 @@ instances:
     parameters:
       standard_name: ice_area_fraction
       value: 0.0
+  atm_cfc11:
+    model: surface_constant
+    parameters:
+      standard_name: 
+      value: 0.5
+  atm_cfc12:
+    model: surface_constant
+    parameters:
+      standard_name: 
+      value: 0.5
+  atm_sf6:
+    model: surface_constant
+    parameters:
+      standard_name: 
+      value: 0.5

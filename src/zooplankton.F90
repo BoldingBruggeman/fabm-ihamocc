@@ -10,7 +10,7 @@ module ihamocc_zooplankton
    private
 
    type, extends(type_base_model), public :: type_ihamocc_zooplankton
-      type (type_dependency_id) :: id_ptho, id_phytomi, id_phosy, id_depth
+      type (type_dependency_id) :: id_ptho, id_phytomi, id_depth
       type (type_state_variable_id) :: id_zoo, id_phy, id_silica, id_sco212, id_phosph, id_det, id_doc
       type (type_diagnostic_variable_id) :: id_gratpoc, id_pommor, id_dimmor, id_graton, id_grawa, id_domex
       real(rk) :: grami, grazra, bkzoo, epsher, zinges, spemor, gammaz, ecan
@@ -43,7 +43,6 @@ contains
       call self%register_dependency(self%id_depth,        standard_variables%depth)
       call self%register_dependency(self%id_ptho,      standard_variables%temperature)
       call self%register_dependency(self%id_phytomi,   'phytomi', 'kmol P/m3', 'minimum concentration of phytoplankton')
-      call self%register_dependency(self%id_phosy,     'phosy',   'kmol/m3/d', 'photosynthetic rate')
       
       call self%register_state_dependency(self%id_phy, 'phy',     'kmol/m^3',  'phytoplankton')
       call self%register_state_dependency(self%id_doc, 'doc',     'kmol/m^3',  'Dissolved organic carbon')
