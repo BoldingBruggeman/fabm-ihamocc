@@ -296,7 +296,6 @@ instances:
       zoo: 5.0e-9
     coupling:
       phytomi: phytoplankton/phytomi
-      phosy: phytoplankton/phosy
       phy: phytoplankton/phy
       doc: doc/c
   oafx:

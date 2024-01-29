@@ -209,6 +209,7 @@ contains
          delcar_part = 0.0_rk
          delcar = 0.0_rk
          delsil = 0.0_rk
+         zdis = 0.01_rk / ((self%FractDim + 0.01_rk)*self%cellmass)
          if (depth<=100_rk) then ! in photic zone             
              bacfra = self%remido*doc
              export = pommor + gratpoc + phymor
@@ -240,7 +241,6 @@ contains
                      anosloss = (phosy-exud-graton-grawa)*avnos/avmass
                      nos_roc = anosloss
                  endif
-                 zdis = 0.01_rk / ((self%FractDim + 0.01_rk)*self%cellmass)
                  
                  zmornos = pommor * zdis * 1.e+6_rk
                  nos_roc = nos_roc + zmornos
