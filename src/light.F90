@@ -13,7 +13,7 @@ module ihamocc_light
       type (type_state_variable_id)      :: id_phy 
       type (type_dependency_id)          :: id_atten_phyt, id_dz
       type (type_surface_dependency_id)  :: id_strahl
-      type (type_diagnostic_variable_id) :: id_uv, id_light
+      type (type_diagnostic_variable_id) :: id_uv, id_light, id_chl
       real(rk) :: atten_w, atten_uv, ctochl
    contains
       procedure :: initialize
@@ -37,13 +37,14 @@ contains
       
       call self%register_diagnostic_variable(self%id_uv,     'uv',     'W m-2', 'remaining uv light not absorbed above',source=source_do_column)
       call self%register_diagnostic_variable(self%id_light,  'light',  'W m-2', 'remaining PAR light not absorbed above',source=source_do_column)
+      call self%register_diagnostic_variable(self%id_chl,    'chl',    'mg m-3', 'chlorophyl concentration',source=source_do_column)
    end subroutine
    
    subroutine do_column(self, _ARGUMENTS_DO_COLUMN_)
       class (type_ihamocc_light), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_COLUMN_
 
-      real(rk) :: strahl, dz, atten_phyt, atten, abs_bgc, light, uv, avphy, absorption, absorption_uv, abs_uv
+      real(rk) :: strahl, dz, atten_phyt, atten, abs_bgc, light, uv, avphy, absorption, absorption_uv, abs_uv, chl
 
       _GET_SURFACE_(self%id_strahl,strahl)
       absorption = 1._rk
@@ -54,7 +55,8 @@ contains
          _GET_(self%id_atten_phyt,atten_phyt)
          
          ! Average light intensity in layer k
-         atten_phyt = 0.03_rk*rcar*(12._rk/self%ctochl)*1.e6_rk * max(0._rk,avphy)  ! phytoplankton attenuation in 1/m 
+         chl = rcar*(12._rk/self%ctochl)*1.e6_rk * max(0._rk,avphy)
+         atten_phyt = 0.03_rk*chl  ! phytoplankton attenuation in 1/m 
          atten = self%atten_w + atten_phyt
          abs_bgc = ((absorption/atten)*(1._rk-exp(-atten*dz)))/dz
          abs_uv  = ((absorption_uv/self%atten_uv)*(1._rk-exp(-self%atten_uv*dz)))/dz
@@ -66,6 +68,7 @@ contains
          uv    = abs_uv*strahl
          light = abs_bgc*strahl
          
+         _SET_DIAGNOSTIC_(self%id_chl,chl)
          _SET_DIAGNOSTIC_(self%id_uv,uv)
          _SET_DIAGNOSTIC_(self%id_light,light)
       _DOWNWARD_LOOP_END_
