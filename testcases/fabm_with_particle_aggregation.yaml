@@ -94,7 +94,7 @@ instances:
       wpoc: 5.
       wcal: 30.
       wopal: 15. #30.
-      AGG: false
+      AGG: true
       WLIN: false
     initialization:
       det: 4.26e-10
