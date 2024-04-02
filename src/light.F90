@@ -11,7 +11,7 @@ module ihamocc_light
 
    type, extends(type_base_model), public :: type_ihamocc_light
       type (type_state_variable_id)      :: id_phy 
-      type (type_dependency_id)          :: id_atten_phyt, id_dz
+      type (type_dependency_id)          :: id_dz
       type (type_surface_dependency_id)  :: id_strahl
       type (type_diagnostic_variable_id) :: id_uv, id_light, id_chl
       real(rk) :: atten_w, atten_uv, ctochl
@@ -52,7 +52,6 @@ contains
       _DOWNWARD_LOOP_BEGIN_
          _GET_(self%id_dz,dz)
          _GET_(self%id_phy,avphy)
-         _GET_(self%id_atten_phyt,atten_phyt)
          
          ! Average light intensity in layer k
          chl = rcar*(12._rk/self%ctochl)*1.e6_rk * max(0._rk,avphy)

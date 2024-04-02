@@ -62,6 +62,7 @@ contains
       ! Register state dependencies
       call self%register_state_dependency(self%id_alkali, 'alkali', 'kmol m-3', 'Alkalinity')
       call self%register_state_dependency(self%id_phosph, 'phosph', 'kmol m-3', 'Dissolved hosphate')
+      call self%register_state_dependency(self%id_oxygen, 'oxygen', 'kmol m-3', 'Dissolved oxygen')
       
       ! Register environmental dependencies
       call self%register_dependency(self%id_ndep_in, 'ndep_in', 'kmol m-2 s-1', 'nitrogen deposition flux')
