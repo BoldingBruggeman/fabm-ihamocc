@@ -215,6 +215,7 @@ instances:
       an2o: 0.0
       ano3: 2.75e-6
     coupling:
+      oxygen: oxygen/oxygen
       alkali: carbon/alkali
       phosph: phosph/c
       ndep_in: ndep/data
