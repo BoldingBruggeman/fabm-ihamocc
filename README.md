@@ -49,7 +49,7 @@ git clone https://github.com/fabm-model/fabm.git
 git clone https://github.com/BoldingBruggeman/fabm-ihamocc.git
 mkdir build
 cd build
-cmake ../gotm -DFABM_BASE=../fabm -DFABM_INSTITUTES=ihamocc -DFABM_IHAMOCC_BASE=../fabm-pisces
+cmake ../gotm -DFABM_BASE=../fabm -DFABM_INSTITUTES=ihamocc -DFABM_IHAMOCC_BASE=../fabm-ihamocc
 make install
 ```
 
@@ -57,7 +57,7 @@ This will install the GOTM executable with support for IHAMOCC at `~/local/gotm/
 
 ## How to run a FABM-IHAMOCC simulation
 
-A `fabm.yaml` file with the PISCES configuration is provided under `<IHAMOCCDIR>/testcases`. You can drop this file in the working directory of a FABM-compatible model such as GOTM to use it during simulation. Note that for GOTM, you will also need to ensure that `fabm/use` is set to `true` in `gotm.yaml`. Otherwise GOTM would run with physics only.
+A `fabm.yaml` file with the iHAMOCC configuration is provided under `<IHAMOCCDIR>/testcases`. You can drop this file in the working directory of a FABM-compatible model such as GOTM to use it during simulation. Note that for GOTM, you will also need to ensure that `fabm/use` is set to `true` in `gotm.yaml`. Otherwise GOTM would run with physics only.
 
 ## To do
 
