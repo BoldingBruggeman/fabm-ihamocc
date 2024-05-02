@@ -1,7 +1,7 @@
 add_library(fabm_models_ihamocc OBJECT
             ihamocc_model_library.F90
-			shared.F90
-			oxygen.F90
+            shared.F90
+            oxygen.F90
             carbon.F90
             bromo.F90
             cfc.F90
@@ -21,7 +21,7 @@ add_library(fabm_models_ihamocc OBJECT
             tracer.F90
            )
 
-add_dependencies(fabm_models_ihamocc fabm_base)
+target_link_libraries(fabm_models_ihamocc PRIVATE fabm_base)
 
 #-----------------------------------------------------------------------
 # Copyright (C) 2023 - BB
