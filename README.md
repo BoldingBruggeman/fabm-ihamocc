@@ -3,6 +3,7 @@
 This is a [FABM](https://fabm.net) port of the iHAMOCC biogeochemical model which forms part of the [Norwegian Earth System Model version 2 (NorESM2)](https://doi.org/10.5194/gmd-13-2393-2020). It is based on the iHAMOCC code that comes with the master version of [BLOM](https://noresm-docs.readthedocs.io/en/noresm2/model-description/ocn_model.html) as of June 6th 2023.
 
 This work was co-funded by the European Union under grant agreement no. 101083922 (OceanICU) and UK Research and Innovation (UKRI) under the UK government’s Horizon Europe funding guarantee [grant number 10054454, 10063673, 10064020, 10059241, 10079684, 10059012, 10048179]. The views, opinions and practices used to produce this software are however those of the author(s) only and do not necessarily reflect those of the European Union or European Research Executive Agency. Neither theEuropean Union nor the granting authority can be held responsible for them.
+
 Model code has been kept as faithful to the original code as possible, but has been changed in a few places (see below).
 
 In addition, FABM-iHAMOCC currently only includes the sediment_bypass option, meaning that there are no explicit representation of sediment dynamics, beyond a redistribution of tracers into the water column.
